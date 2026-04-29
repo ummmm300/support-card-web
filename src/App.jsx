@@ -72,29 +72,34 @@ const NEW_CARD_ID = "card_108"; // あなたとふたり、電車で
 
 function App() {
 
-  const calculationPlan = calculationSettings.plan;
-  const calculationType = calculationSettings.type;
-  const calculationMinSpCards = calculationSettings.minSpCards;
+const [mode, setMode] = useState("legend");
+const [plan, setPlan] = useState("sense");
+const [type, setType] = useState("voda");
+const [minSpCards, setMinSpCards] = useState(0);
 
-  const calculationContext =
-    contextPresets[calculationSettings.mode]
-      .plans[calculationSettings.plan]
-      .types[calculationSettings.type]
-      .context;
+const [calculationSettings, setCalculationSettings] = useState({
+  mode: "legend",
+  plan: "sense",
+  type: "voda",
+  minSpCards: 0,
+});
 
-  const [mode, setMode] = useState("legend");
-  const [plan, setPlan] = useState("sense");
-  const [type, setType] = useState("voda");
+const calculationMode = calculationSettings.mode;
+const calculationPlan = calculationSettings.plan;
+const calculationType = calculationSettings.type;
+const calculationMinSpCards = calculationSettings.minSpCards;
+
+const calculationContext =
+  contextPresets[calculationMode]
+    .plans[calculationPlan]
+    .types[calculationType]
+    .context;
+
   const [showResult, setShowResult] = useState(false);
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem("theme") || "light";
   });
-  const [calculationSettings, setCalculationSettings] = useState({
-    mode,
-    plan,
-    type,
-    minSpCards,
-  });
+
 
   const [resultViewMode, setResultViewMode] = useState("recommend");
   const [scoreListMode, setScoreListMode] = useState("owned");
