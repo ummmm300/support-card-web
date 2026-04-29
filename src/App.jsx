@@ -117,6 +117,8 @@ function App() {
     localStorage.setItem("ownedCards", JSON.stringify(ownedCards));
   }, [ownedCards]);
 
+  const [calculationOwnedCards, setCalculationOwnedCards] = useState(ownedCards);
+
   const [ownedSearchText, setOwnedSearchText] = useState("");
   const [ownedTypeFilter, setOwnedTypeFilter] = useState("all");
   const [ownedPlanFilter, setOwnedPlanFilter] = useState("all");
@@ -278,49 +280,53 @@ function App() {
     return bestTeam;
   }
 
-  const ownedCardResults = cards
-    .filter((card) => ownedCards[card.card_id]?.owned)
-    .filter((card) => {
-      if (plan === "sense") return card.sense === 1;
-      if (plan === "motivation") return card.logic === 1;
-      if (plan === "impression") return card.logic === 1;
-      if (plan === "anomaly") return card.anomaly === 1;
-      return true;
-    })
-    .map((card) => {
-      const limitBreak = ownedCards[card.card_id]?.limitBreak ?? 0;
-      const score = calcCardScore(card, abilityDb, context, limitBreak);
+  const ownedCardResults = useMemo(() => {
+    return cards
+      .filter((card) => calculationOwnedCards[card.card_id]?.owned)
+      .filter((card) => {
+        if (plan === "sense") return card.sense === 1;
+        if (plan === "motivation") return card.logic === 1;
+        if (plan === "impression") return card.logic === 1;
+        if (plan === "anomaly") return card.anomaly === 1;
+        return true;
+      })
+      .map((card) => {
+        const limitBreak = calculationOwnedCards[card.card_id]?.limitBreak ?? 0;
+        const score = calcCardScore(card, abilityDb, context, limitBreak);
 
-      return {
-        card,
-        limitBreak,
-        score,
-        isRental: false,
-      };
-    })
-    .sort((a, b) => b.score - a.score);
+        return {
+          card,
+          limitBreak,
+          score,
+          isRental: false,
+        };
+      })
+      .sort((a, b) => b.score - a.score);
+  }, [calculationOwnedCards, plan, context]);
 
-  const rentalCardResults = cards
-    .filter((card) => card.rental_candidate === 1)
-    .filter((card) => {
-      if (plan === "sense") return card.sense === 1;
-      if (plan === "motivation") return card.logic === 1;
-      if (plan === "impression") return card.logic === 1;
-      if (plan === "anomaly") return card.anomaly === 1;
-      return true;
-    })
-    .map((card) => {
-      const limitBreak = 4;
-      const score = calcCardScore(card, abilityDb, context, limitBreak);
+  const rentalCardResults = useMemo(() => {
+    return cards
+      .filter((card) => card.rental_candidate === 1)
+      .filter((card) => {
+        if (plan === "sense") return card.sense === 1;
+        if (plan === "motivation") return card.logic === 1;
+        if (plan === "impression") return card.logic === 1;
+        if (plan === "anomaly") return card.anomaly === 1;
+        return true;
+      })
+      .map((card) => {
+        const limitBreak = 4;
+        const score = calcCardScore(card, abilityDb, context, limitBreak);
 
-      return {
-        card,
-        limitBreak,
-        score,
-        isRental: true,
-      };
-    })
-    .sort((a, b) => b.score - a.score);
+        return {
+          card,
+          limitBreak,
+          score,
+          isRental: true,
+        };
+      })
+      .sort((a, b) => b.score - a.score);
+  }, [plan, context]);
 
   const filteredCards = cards.filter((card) => {
     if (plan === "sense") return card.sense === 1;
@@ -339,10 +345,10 @@ function App() {
 
     const targetCards = isAllFourLimitBreakMode
       ? filteredCards
-      : filteredCards.filter((card) => ownedCards[card.card_id]);
+      : filteredCards.filter((card) => calculationOwnedCards[card.card_id]);
 
     const results = targetCards.map((card) => {
-      const ownedInfo = ownedCards[card.card_id];
+      const ownedInfo = calculationOwnedCards[card.card_id];
       const isOwned = Boolean(ownedInfo);
       const currentLimitBreak = isOwned ? Number(ownedInfo.limitBreak ?? 0) : 0;
 
@@ -379,7 +385,7 @@ function App() {
     resultViewMode,
     scoreListMode,
     filteredCards,
-    ownedCards,
+    calculationOwnedCards,
     context,
   ]);
 
@@ -473,8 +479,8 @@ function App() {
     return selected.sort((a, b) => b.score - a.score);
   }
 
-  const recommendedPatternResults = Object.keys(PATTERN_COUNTS).map(
-    (patternName) => {
+  const recommendedPatternResults = useMemo(() => {
+    return Object.keys(PATTERN_COUNTS).map((patternName) => {
       const cards = selectRecommendedCardsWithRentalAndPattern(
         ownedCardResults,
         rentalCardResults,
@@ -492,8 +498,8 @@ function App() {
         cards,
         totalScore,
       };
-    }
-  );
+    });
+  }, [ownedCardResults, rentalCardResults, minSpCards, type]);
 
   const filteredOwnedCards = cards.filter((card) => {
     const matchesName =
@@ -723,7 +729,13 @@ function App() {
             </select>
           </label>
 
-          <button className="primaryButton" onClick={() => setShowResult(true)}>
+          <button
+            className="primaryButton"
+            onClick={() => {
+              setCalculationOwnedCards(ownedCards);
+              setShowResult(true);
+            }}
+          >
             計算開始
           </button>
 
