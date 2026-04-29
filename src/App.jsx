@@ -534,6 +534,11 @@ function App() {
     return selected.sort((a, b) => b.score - a.score);
   }
 
+  console.log("ownedCardResults", ownedCardResults.length);
+  console.log("rentalCardResults", rentalCardResults.length);
+  console.log("calculationMinSpCards", calculationMinSpCards);
+  console.log("calculationType", calculationType);
+
   const recommendedPatternResults = useMemo(() => {
     if (!showResult) return [];
 
@@ -546,7 +551,9 @@ function App() {
         patternName
       );
 
-      const totalScore = cards.reduce((sum, result) => sum + result.score, 0);
+      const totalScore = cards.reduce((sum, result) => {
+        return sum + result.score;
+      }, 0);
 
       return {
         patternName,
