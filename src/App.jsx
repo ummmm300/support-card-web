@@ -335,7 +335,7 @@ function App() {
       })
       .map((card) => {
         const limitBreak = calculationOwnedCards[card.card_id]?.limitBreak ?? 0;
-        const score = calcCardScore(card, abilityDb, context, limitBreak);
+        const score = calcCardScore(card, abilityDb, calculationContext, limitBreak);
 
         return {
           card,
@@ -345,7 +345,7 @@ function App() {
         };
       })
       .sort((a, b) => b.score - a.score);
-  }, [calculationOwnedCards, plan, context]);
+  }, [calculationOwnedCards, calculationPlan, calculationContext]);
 
   const ownedCardResults = useMemo(() => {
     return cards
