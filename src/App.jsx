@@ -68,7 +68,7 @@ const PATTERN_COUNTS = {
   "3/2/1": [3, 2, 1],
   "2/2/2": [2, 2, 2],
 };
-const NEW_CARD_ID = card_108; // あなたとふたり、電車で
+const NEW_CARD_ID = "card_108"; // あなたとふたり、電車で
 
 function App() {
 
