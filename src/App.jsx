@@ -100,6 +100,11 @@ function App() {
     return localStorage.getItem("theme") || "light";
   });
 
+  const SP_RATE_MAP = {
+    SSR: 28,
+    SR: 21,
+  };
+
 
   const [resultViewMode, setResultViewMode] = useState("recommend");
   const [scoreListMode, setScoreListMode] = useState("owned");
@@ -225,8 +230,24 @@ function App() {
     reader.readAsText(file);
   }
 
+  function getSpRate(card) {
+    if (!hasSpRateUp(card)) return 0;
+    return SP_RATE_MAP[card.rarity] ?? 0;
+    if (card.rarity === "SSR") return 28;
+    if (card.rarity === "SR") return 21;
+
+    return 0;
+  }
+
   function hasSpRateUp(card) {
-    return Number(card.sp_rate ?? 0) > 0;
+    return [
+      card.ab1,
+      card.ab2,
+      card.ab3,
+      card.ab4,
+      card.ab5,
+      card.ab6,
+    ].includes("sp_rate_id");
   }
 
   function formatScore(score) {
@@ -326,9 +347,9 @@ function App() {
       .sort((a, b) => b.score - a.score);
   }, [calculationOwnedCards, plan, context]);
 
-  const rentalCardResults = useMemo(() => {
+  const ownedCardResults = useMemo(() => {
     return cards
-      .filter((card) => card.rental_candidate === 1)
+      .filter((card) => calculationOwnedCards[card.card_id]?.owned)
       .filter((card) => {
         if (calculationPlan === "sense") return card.sense === 1;
         if (calculationPlan === "motivation") return card.logic === 1;
@@ -337,18 +358,23 @@ function App() {
         return true;
       })
       .map((card) => {
-        const limitBreak = 4;
-        const score = calcCardScore(card, abilityDb, calculationContext, limitBreak);
+        const limitBreak = calculationOwnedCards[card.card_id]?.limitBreak ?? 0;
+        const score = calcCardScore(
+          card,
+          abilityDb,
+          calculationContext,
+          limitBreak
+        );
 
         return {
           card,
           limitBreak,
           score,
-          isRental: true,
+          isRental: false,
         };
       })
       .sort((a, b) => b.score - a.score);
-  }, [calculationPlan, calculationContext]);
+  }, [calculationOwnedCards, calculationPlan, calculationContext]);
 
   const filteredCards = cards.filter((card) => {
     if (plan === "sense") return card.sense === 1;
@@ -521,7 +547,7 @@ function App() {
         totalScore,
       };
     });
-  }, [ownedCardResults, rentalCardResults, minSpCards, type]);
+  }, [ownedCardResults, rentalCardResults, calculationMinSpCards, calculationType]);
 
   const filteredOwnedCards = cards.filter((card) => {
     const matchesName =
@@ -766,6 +792,7 @@ function App() {
           >
             計算開始
           </button>
+
           <div className="resultTabs">
             <button
               className={`commonButton ${resultViewMode === "recommend" ? "activeTabButton" : ""}`}
@@ -816,7 +843,7 @@ function App() {
                                   <td>{result.card.name}</td>
                                   <td>{result.score.toFixed(1)}</td>
                                   <td>{result.card.param_type}</td>
-                                  <td>{hasSpRateUp(result.card) ? result.card.sp_rate : 0}</td>
+                                  <td>{getSpRate(result.card)}</td>
                                 </tr>
                               ))}
                             </tbody>
@@ -880,7 +907,7 @@ function App() {
                             <td>{formatScore(result.score2)}</td>
                             <td>{formatScore(result.score3)}</td>
                             <td>{formatScore(result.score4)}</td>
-                            <td>{hasSpRateUp(result.card) ? result.card.sp_rate : 0}</td>
+                            <td>{getSpRate(result.card)}</td>
                           </tr>
                         ))}
                       </tbody>
