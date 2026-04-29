@@ -308,7 +308,7 @@ function App() {
           const team = [...voGroup, ...daGroup, ...viGroup];
 
           const spCount = team.filter((result) =>
-            hasSpRateUp(result.card)
+            hasValidSpRateUp(result.card, type)
           ).length;
 
           if (spCount < minSpCards) continue;
@@ -486,7 +486,8 @@ function App() {
       const ownTeam = findBestOwnedCardsByPattern(
         ownCandidates,
         remainingPattern,
-        Math.max(0, minSpCards - rentalSpCount)
+        Math.max(0, minSpCards - rentalSpCount),
+        type
       );
 
       if (!ownTeam) continue;
