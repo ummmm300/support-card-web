@@ -354,6 +354,35 @@ function App() {
       .sort((a, b) => b.score - a.score);
   }, [calculationOwnedCards, calculationPlan, calculationContext]);
 
+  const rentalCardResults = useMemo(() => {
+    return cards
+      .filter((card) => card.rental_candidate === 1)
+      .filter((card) => {
+        if (calculationPlan === "sense") return card.sense === 1;
+        if (calculationPlan === "motivation") return card.logic === 1;
+        if (calculationPlan === "impression") return card.logic === 1;
+        if (calculationPlan === "anomaly") return card.anomaly === 1;
+        return true;
+      })
+      .map((card) => {
+        const limitBreak = 4;
+        const score = calcCardScore(
+          card,
+          abilityDb,
+          calculationContext,
+          limitBreak
+        );
+
+        return {
+          card,
+          limitBreak,
+          score,
+          isRental: true,
+        };
+      })
+      .sort((a, b) => b.score - a.score);
+  }, [calculationPlan, calculationContext]);
+
   const filteredCards = cards.filter((card) => {
     if (plan === "sense") return card.sense === 1;
     if (plan === "motivation") return card.logic === 1;
