@@ -955,7 +955,7 @@ function App() {
           </div>
 
           <div className="ownedList">
-            {filteredOwnedCards.map((card) => {
+            {filteredOwnedCards.slice().reverse().map((card) => {
               const owned = ownedCards[card.card_id]?.owned ?? false;
               const limitBreak = ownedCards[card.card_id]?.limitBreak ?? 0;
 
