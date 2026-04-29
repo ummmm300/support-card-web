@@ -235,6 +235,24 @@ function App() {
       : false;
   }
 
+  function hasValidSpRateUp(card, calculationType) {
+    if (!hasSpRateUp(card)) return false;
+
+    if (calculationType === "voda") {
+      return card.param_type === "Vo" || card.param_type === "Da";
+    }
+
+    if (calculationType === "davi") {
+      return card.param_type === "Da" || card.param_type === "Vi";
+    }
+
+    if (calculationType === "vovi") {
+      return card.param_type === "Vo" || card.param_type === "Vi";
+    }
+
+    return true;
+  }
+
   function formatScore(score) {
     return Number(score ?? 0).toFixed(1);
   }
@@ -456,6 +474,15 @@ function App() {
         (ownedCard) => ownedCard.card.card_id !== rentalCard.card.card_id
       );
 
+      const availableSpCount =
+        ownCandidates.filter((result) =>
+          hasValidSpRateUp(result.card, type)
+        ).length + rentalSpCount;
+
+      if (availableSpCount < minSpCards) {
+        continue;
+      }
+
       const ownTeam = findBestOwnedCardsByPattern(
         ownCandidates,
         remainingPattern,
@@ -467,7 +494,7 @@ function App() {
       const team = [...ownTeam, rentalCard];
 
       const totalSpCount = team.filter((result) =>
-        hasSpRateUp(result.card)
+        hasValidSpRateUp(result.card, type)
       ).length;
 
       if (totalSpCount < minSpCards) continue;
