@@ -68,6 +68,7 @@ const PATTERN_COUNTS = {
   "3/2/1": [3, 2, 1],
   "2/2/2": [2, 2, 2],
 };
+const NEW_CARD_ID = 108; // あなたとふたり、電車で
 
 function App() {
 
@@ -955,50 +956,58 @@ function App() {
           </div>
 
           <div className="ownedList">
-            {filteredOwnedCards.slice().reverse().map((card) => {
-              const owned = ownedCards[card.card_id]?.owned ?? false;
-              const limitBreak = ownedCards[card.card_id]?.limitBreak ?? 0;
+            {filteredOwnedCards
+              .slice()
+              .sort((a, b) => {
+                if (a.card_id === NEW_CARD_ID) return -1;
+                if (b.card_id === NEW_CARD_ID) return 1;
+                return 0;
+              })
+              .map((card) => {
 
-              return (
-                <div
-                  className="ownedRow clickable"
-                  key={card.card_id}
-                  onClick={() => updateOwnedCard(card.card_id, "owned", !owned)}
-                >
-                  <div className="ownedCheck">
-                    <input
-                      type="checkbox"
-                      checked={owned}
+                const owned = ownedCards[card.card_id]?.owned ?? false;
+                const limitBreak = ownedCards[card.card_id]?.limitBreak ?? 0;
+
+                return (
+                  <div
+                    className="ownedRow clickable"
+                    key={card.card_id}
+                    onClick={() => updateOwnedCard(card.card_id, "owned", !owned)}
+                  >
+                    <div className="ownedCheck">
+                      <input
+                        type="checkbox"
+                        checked={owned}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={(e) =>
+                          updateOwnedCard(card.card_id, "owned", e.target.checked)
+                        }
+                      />
+                      <span>{card.name}</span>
+                    </div>
+
+                    <span className="ownedType">{card.param_type}</span>
+
+                    <select
+                      value={limitBreak}
                       onClick={(e) => e.stopPropagation()}
                       onChange={(e) =>
-                        updateOwnedCard(card.card_id, "owned", e.target.checked)
+                        updateOwnedCard(
+                          card.card_id,
+                          "limitBreak",
+                          Number(e.target.value)
+                        )
                       }
-                    />
-                    <span>{card.name}</span>
+                    >
+                      <option value={0}>0凸</option>
+                      <option value={1}>1凸</option>
+                      <option value={2}>2凸</option>
+                      <option value={3}>3凸</option>
+                      <option value={4}>4凸</option>
+                    </select>
                   </div>
-
-                  <span className="ownedType">{card.param_type}</span>
-
-                  <select
-                    value={limitBreak}
-                    onClick={(e) => e.stopPropagation()}
-                    onChange={(e) =>
-                      updateOwnedCard(
-                        card.card_id,
-                        "limitBreak",
-                        Number(e.target.value)
-                      )
-                    }
-                  >
-                    <option value={0}>0凸</option>
-                    <option value={1}>1凸</option>
-                    <option value={2}>2凸</option>
-                    <option value={3}>3凸</option>
-                    <option value={4}>4凸</option>
-                  </select>
-                </div>
-              );
-            })}
+                );
+              })}
           </div>
         </section>
       </div>
