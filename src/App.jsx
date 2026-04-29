@@ -77,8 +77,6 @@ function App() {
   const [type, setType] = useState("voda");
   const [minSpCards, setMinSpCards] = useState(0);
 
-  const [calculationTrigger, setCalculationTrigger] = useState(0);
-
   const [calculationSettings, setCalculationSettings] = useState({
     mode: "legend",
     plan: "sense",
@@ -562,7 +560,6 @@ function App() {
       };
     });
   }, [
-    calculationTrigger,
     showResult,
     ownedCardResults,
     rentalCardResults,
@@ -808,7 +805,6 @@ function App() {
                 type,
                 minSpCards,
               });
-              setCalculationTrigger((prev) => prev + 1);
               setShowResult(true);
             }}
           >
