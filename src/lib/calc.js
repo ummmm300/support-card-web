@@ -96,17 +96,13 @@ export function calcAbilityScore(kind, value, context, limitCount) {
 }
 
 export function calcCardScore(card, abilityDb, context, limitBreak = 0) {
-  const tier = card.ability_tier;
+  const tier = (card.ability_tier || card.rarity || "").trim();
   const idx = getLimitBreakIndex(limitBreak);
 
   let total = 0;
 
   for (const abilityId of card.abilities) {
     const ability = abilityDb[`${abilityId}__${tier}`];
-
-    console.log("abilityId:", abilityId);
-    console.log("ability:", ability);
-    console.log("context:", context);
 
     if (!ability) continue;
 
@@ -116,8 +112,6 @@ export function calcCardScore(card, abilityDb, context, limitBreak = 0) {
       context,
       ability.limit_count
     );
-
-    console.log("score:", score);
 
     total += score;
   }

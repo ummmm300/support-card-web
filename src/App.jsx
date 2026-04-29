@@ -66,6 +66,7 @@ const TREND_TO_TYPES = {
 const PATTERN_COUNTS = {
   "3/3/0": [3, 3, 0],
   "3/2/1": [3, 2, 1],
+  "2/3/1": [2, 3, 1],
   "2/2/2": [2, 2, 2],
 };
 const NEW_CARD_ID = "card_108"; // あなたとふたり、電車で
@@ -544,11 +545,6 @@ function App() {
 
     return selected.sort((a, b) => b.score - a.score);
   }
-
-  console.log("ownedCardResults", ownedCardResults.length);
-  console.log("rentalCardResults", rentalCardResults.length);
-  console.log("calculationMinSpCards", calculationMinSpCards);
-  console.log("calculationType", calculationType);
 
   const recommendedPatternResults = useMemo(() => {
     if (!showResult) return [];

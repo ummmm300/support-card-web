@@ -6,7 +6,7 @@ card_004,進化したお弁当、気になる,SSR,SSR,0,Vi,0,1,0,param_bonus_vi_
 card_005,あたしの勝ち、ですね～！,SSR,SSR,28,Vi,0,0,1,flat_vi_id,sp_rate_id,on_supply_id,get_ssr_id,on_param_event_id,none_id,1,1,SP
 card_006,合格おめでとう！,SSR,SSR,28,Da,1,0,0,flat_da_id,sp_rate_id,get_focus_id,get_ssr_id,on_param_event_id,get_focus_da70_id,1,1,SP
 card_007,かかってらっしゃい！,SSR,SSR,0,Vi,0,1,0,flat_vi_id,on_sp_20_id,get_energy_id,get_mental_id,on_param_event_id,none_id,1,1,
-card_008,みいつけた。,SSR,SR,0,Vo,0,1,0,param_bonus_vo_ssr_id,none_id,on_supply_id,get_energy_id,on_param_event_ssr_id,none_id,,1,
+card_008,みいつけた。,SSR,SR,0,Vo,0,1,,param_bonus_vo_ssr_id,none_id,on_supply_id,get_energy_id,on_param_event_ssr_id,none_id,,1,
 card_009,思い出の宝箱だ、ね,SSR,SSR,0,Vo,0,1,0,flat_vo_id,on_supply_id,on_exam_end_id,get_mental_id,on_param_event_id,none_id,1,1,
 card_010,手毬のリサイタル、だね,SSR,SSR,0,Vo,0,0,1,param_bonus_vo_id,get_mental_id,on_sp_vo_id,get_ssr_id,on_param_event_id,none_id,1,1,
 card_011,オシャレもメイクも♪,SSR,SR,0,Vi,1,0,0,param_bonus_vi_ssr_id,none_id,on_exam_end_id,on_outing_id,on_param_event_ssr_id,none_id,,1,
