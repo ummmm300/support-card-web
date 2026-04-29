@@ -232,13 +232,13 @@ function App() {
 
   function getSpRate(card) {
     if (!hasSpRateUp(card)) return 0;
-    return SP_RATE_MAP[card.rarity] ?? 0;
+    return Number(card.sp_rate ?? 0);
   }
 
   function hasSpRateUp(card) {
-    return Object.values(card).some((value) => {
-      return String(value).trim() === "sp_rate_id";
-    });
+    return Array.isArray(card.abilities)
+      ? card.abilities.includes("sp_rate_id")
+      : false;
   }
 
   function formatScore(score) {
