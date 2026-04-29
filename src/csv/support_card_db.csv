@@ -102,8 +102,8 @@ card_100,おひさま笑顔、満開ふたつ,SR,SR,0,Da,0,0,1,flat_da_id,on_spe
 card_101,ごきげんような挨拶♪,SR,SR,21,Vi,1,0,0,param_bonus_vi_id,sp_rate_id,on_delete_id,get_item_id,on_param_event_id,none_id,,1,SP
 card_102,一番星と王子様,SR,SR,21,Vo,0,1,0,flat_vo_id,sp_rate_id,on_exam_end_id,on_sp_vo_id,on_param_event_id,on_sp_vo_vo40_id,,1,SP
 card_103,師弟の修行,SR,SR,0,Vi,0,1,0,param_bonus_vi_id,on_customize_id,get_motivation_id,on_sp_vi_id,on_param_event_id,on_special_training_vo30_id,,1,指導ViSP30かける2、2回発動しないので30
-card_104,今はあえて、背を向けて,SR,SR,21,Vo,1,1,1,param_bonus_vo_id,get_card_id,on_exam_end_id,on_sp_vo_id,on_param_event_id,none_id,,1,SP
-card_105,ふわふわでワクワク,SR,SR,21,Da,1,1,1,param_bonus_da_id,get_card_id,on_exam_end_id,on_sp_da_id,on_param_event_id,none_id,,1,SP、ドリンクは無視
+card_104,今はあえて、背を向けて,SR,SR,21,Vo,1,1,1,param_bonus_vo_id,none_id,on_exam_end_id,on_sp_vo_id,on_param_event_id,none_id,,1,SP
+card_105,ふわふわでワクワク,SR,SR,21,Da,1,1,1,param_bonus_da_id,none_id,on_exam_end_id,on_sp_da_id,on_param_event_id,none_id,,1,SP、ドリンクは無視
 card_106,今日は見学なんです,SR,SR,0,Da,1,1,1,param_bonus_da_id,on_delete_M_id,on_supply_id,on_sp_da_id,on_param_event_id,none_id,,1,
 card_107,ピコピコでボーン,SR,SR,0,Da,0,0,1,param_bonus_da_id,get_reserve_id,on_supply_id,on_sp_da_id,on_param_event_id,none_id,,1,
 card_108,あなたとふたり、電車で,SSR,SSR,28,Vo,0,0,1,flat_vo_id,none_id,on_sp_20_id,get_ssr_id,on_param_event_id,none_id,,1,
