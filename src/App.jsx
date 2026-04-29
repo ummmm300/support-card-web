@@ -625,7 +625,7 @@ function App() {
               alt="サポカ計算機"
             />
             <h1 className="mainTitle">サポカ計算機</h1>
-            <span className="version">v1.0.0 - React Web版として公開</span>
+            <span className="version">v1.0.1 - 不具合の修正</span>
             <p className="appDescription">
               所持サポカからおすすめ上位6枚を自動計算します。
             </p>
@@ -650,17 +650,15 @@ function App() {
                   <li>React Web版として公開</li>
                 </ul>
 
-                {/*
-<p><strong>v1.0.0</strong></p>
-<span className="versionDate"> - 2026/04/28</span>
-<p className="changelogNote">以下の対応を行いました：</p>
-<ul>
-  <li>サポカの画面入力</li>
-  <li>csv保存</li>
-  <li>プラン：ロジック</li>
-  <li>計算条件表示</li>
-</ul>
-*/}
+                <p><strong>v1.0.1</strong></p>
+                <span className="versionDate"> - 2026/04/29</span>
+                <p className="changelogNote">以下の問題への対応・修正を行いました。：</p>
+                <ul>
+                  <li>傾向外のSP枚数をカウントしてしまっていた</li>
+                  <li>"SP時に20枚以上~"アビリティが反映されていなかった</li>
+                  <li>SP枚数の条件を変更したても反映されないことがあった</li>
+                </ul>
+
               </div>
             </div>
           )}
@@ -801,7 +799,7 @@ function App() {
               value={minSpCards}
               onChange={(e) => setMinSpCards(Number(e.target.value))}
             >
-              <option value={0}>0枚</option>
+              <option value={0}>0枚以上</option>
               <option value={1}>1枚以上</option>
               <option value={2}>2枚以上</option>
               <option value={3}>3枚以上</option>
