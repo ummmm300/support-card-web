@@ -233,21 +233,12 @@ function App() {
   function getSpRate(card) {
     if (!hasSpRateUp(card)) return 0;
     return SP_RATE_MAP[card.rarity] ?? 0;
-    if (card.rarity === "SSR") return 28;
-    if (card.rarity === "SR") return 21;
-
-    return 0;
   }
 
   function hasSpRateUp(card) {
-    return [
-      card.ab1,
-      card.ab2,
-      card.ab3,
-      card.ab4,
-      card.ab5,
-      card.ab6,
-    ].includes("sp_rate_id");
+    return Object.values(card).some((value) => {
+      return String(value).trim() === "sp_rate_id";
+    });
   }
 
   function formatScore(score) {
