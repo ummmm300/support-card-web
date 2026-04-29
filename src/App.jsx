@@ -337,30 +337,6 @@ function App() {
       })
       .map((card) => {
         const limitBreak = calculationOwnedCards[card.card_id]?.limitBreak ?? 0;
-        const score = calcCardScore(card, abilityDb, calculationContext, limitBreak);
-
-        return {
-          card,
-          limitBreak,
-          score,
-          isRental: false,
-        };
-      })
-      .sort((a, b) => b.score - a.score);
-  }, [calculationOwnedCards, calculationPlan, calculationContext]);
-
-  const ownedCardResults = useMemo(() => {
-    return cards
-      .filter((card) => calculationOwnedCards[card.card_id]?.owned)
-      .filter((card) => {
-        if (calculationPlan === "sense") return card.sense === 1;
-        if (calculationPlan === "motivation") return card.logic === 1;
-        if (calculationPlan === "impression") return card.logic === 1;
-        if (calculationPlan === "anomaly") return card.anomaly === 1;
-        return true;
-      })
-      .map((card) => {
-        const limitBreak = calculationOwnedCards[card.card_id]?.limitBreak ?? 0;
         const score = calcCardScore(
           card,
           abilityDb,
