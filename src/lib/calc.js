@@ -9,7 +9,7 @@ export const KIND_TO_CONTEXT_KEY = {
   on_sp_vo: "sp_vo_count",
   on_sp_da: "sp_da_count",
   on_sp_vi: "sp_vi_count",
-  on_sp_20: "sp_total_count",
+  on_sp_20: "totalSpLessonCount",
 
   on_lesson_vo: "lesson_count",
   on_lesson_da: "lesson_count",
@@ -53,6 +53,7 @@ export function getLimitBreakIndex(limitBreak) {
   return Math.max(0, Math.min(4, limitBreak));
 }
 
+
 export function calcAbilityScore(kind, value, context, limitCount) {
   kind = kind.trim();
 
@@ -63,14 +64,24 @@ export function calcAbilityScore(kind, value, context, limitCount) {
     return value;
   }
 
-  // ⭐ここで1回だけチェック
+  if (kind === "on_sp_20") {
+    const count =
+      (context.sp_vo_count || 0) +
+      (context.sp_da_count || 0) +
+      (context.sp_vi_count || 0);
+
+    const limitedCount =
+      limitCount >= 0 ? Math.min(count, limitCount) : count;
+
+    return value * limitedCount;
+  }
+
   if (!(kind in KIND_TO_CONTEXT_KEY)) {
     throw new Error(`未登録のkind: ${kind}`);
   }
 
   const contextKey = KIND_TO_CONTEXT_KEY[kind];
 
-  // param_bonusだけ特別処理
   if (kind.startsWith("param_bonus")) {
     return Math.floor((context[contextKey] || 0) * (value / 100));
   }
