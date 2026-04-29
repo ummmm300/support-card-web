@@ -106,3 +106,4 @@ card_104,今はあえて、背を向けて,SR,SR,21,Vo,1,1,1,param_bonus_vo_id,g
 card_105,ふわふわでワクワク,SR,SR,21,Da,1,1,1,param_bonus_da_id,get_card_id,on_exam_end_id,on_sp_da_id,on_param_event_id,none_id,,1,SP、ドリンクは無視
 card_106,今日は見学なんです,SR,SR,0,Da,1,1,1,param_bonus_da_id,on_delete_M_id,on_supply_id,on_sp_da_id,on_param_event_id,none_id,,1,
 card_107,ピコピコでボーン,SR,SR,0,Da,0,0,1,param_bonus_da_id,get_reserve_id,on_supply_id,on_sp_da_id,on_param_event_id,none_id,,1,
+card_108,あなたとふたり、電車で,SSR,SSR,28,Vo,0,0,1,flat_vo_id,none_id,on_sp_20_id,get_ssr_id,on_param_event_id,none_id,,1,

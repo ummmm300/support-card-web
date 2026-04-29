@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import "./App.css";
 import { calcCardScore } from "./lib/calc";
-import { abilityDb } from "./data/abilityDb";
+import { abilityDb } from "./data/abilityDB";
 import { cards } from "./data/cards";
 import { contextPresets } from "./data/contextPresets";
 const CONTEXT_LABELS = {
