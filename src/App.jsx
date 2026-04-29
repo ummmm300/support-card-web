@@ -100,12 +100,6 @@ function App() {
     return localStorage.getItem("theme") || "light";
   });
 
-  const SP_RATE_MAP = {
-    SSR: 28,
-    SR: 21,
-  };
-
-
   const [resultViewMode, setResultViewMode] = useState("recommend");
   const [scoreListMode, setScoreListMode] = useState("owned");
   const [showCsvHelp, setShowCsvHelp] = useState(false);
