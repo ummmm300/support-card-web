@@ -77,6 +77,8 @@ function App() {
   const [type, setType] = useState("voda");
   const [minSpCards, setMinSpCards] = useState(0);
 
+  const [calculationTrigger, setCalculationTrigger] = useState(0);
+
   const [calculationSettings, setCalculationSettings] = useState({
     mode: "legend",
     plan: "sense",
@@ -528,6 +530,8 @@ function App() {
   }
 
   const recommendedPatternResults = useMemo(() => {
+    if (!showResult) return [];
+
     return Object.keys(PATTERN_COUNTS).map((patternName) => {
       const cards = selectRecommendedCardsWithRentalAndPattern(
         ownedCardResults,
@@ -537,9 +541,7 @@ function App() {
         patternName
       );
 
-      const totalScore = cards.reduce((sum, result) => {
-        return sum + result.score;
-      }, 0);
+      const totalScore = cards.reduce((sum, result) => sum + result.score, 0);
 
       return {
         patternName,
@@ -547,7 +549,14 @@ function App() {
         totalScore,
       };
     });
-  }, [ownedCardResults, rentalCardResults, calculationMinSpCards, calculationType]);
+  }, [
+    calculationTrigger,
+    showResult,
+    ownedCardResults,
+    rentalCardResults,
+    calculationMinSpCards,
+    calculationType,
+  ]);
 
   const filteredOwnedCards = cards.filter((card) => {
     const matchesName =
@@ -787,6 +796,7 @@ function App() {
                 type,
                 minSpCards,
               });
+              setCalculationTrigger((prev) => prev + 1);
               setShowResult(true);
             }}
           >
