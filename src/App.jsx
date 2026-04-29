@@ -4,6 +4,7 @@ import { calcCardScore } from "./lib/calc";
 import { abilityDb } from "./data/abilityDb";
 import { cards } from "./data/cards";
 import { contextPresets } from "./data/contextPresets";
+
 const CONTEXT_LABELS = {
   param_vo_total: "レッスンで獲得したVoパラメータ",
   param_da_total: "レッスンで獲得したDaパラメータ",
