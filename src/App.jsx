@@ -72,6 +72,16 @@ const NEW_CARD_ID = "card_108"; // あなたとふたり、電車で
 
 function App() {
 
+  const calculationPlan = calculationSettings.plan;
+  const calculationType = calculationSettings.type;
+  const calculationMinSpCards = calculationSettings.minSpCards;
+
+  const calculationContext =
+    contextPresets[calculationSettings.mode]
+      .plans[calculationSettings.plan]
+      .types[calculationSettings.type]
+      .context;
+
   const [mode, setMode] = useState("legend");
   const [plan, setPlan] = useState("sense");
   const [type, setType] = useState("voda");
@@ -79,6 +89,13 @@ function App() {
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem("theme") || "light";
   });
+  const [calculationSettings, setCalculationSettings] = useState({
+    mode,
+    plan,
+    type,
+    minSpCards,
+  });
+
   const [resultViewMode, setResultViewMode] = useState("recommend");
   const [scoreListMode, setScoreListMode] = useState("owned");
   const [showCsvHelp, setShowCsvHelp] = useState(false);
@@ -284,10 +301,10 @@ function App() {
     return cards
       .filter((card) => calculationOwnedCards[card.card_id]?.owned)
       .filter((card) => {
-        if (plan === "sense") return card.sense === 1;
-        if (plan === "motivation") return card.logic === 1;
-        if (plan === "impression") return card.logic === 1;
-        if (plan === "anomaly") return card.anomaly === 1;
+        if (calculationPlan === "sense") return card.sense === 1;
+        if (calculationPlan === "motivation") return card.logic === 1;
+        if (calculationPlan === "impression") return card.logic === 1;
+        if (calculationPlan === "anomaly") return card.anomaly === 1;
         return true;
       })
       .map((card) => {
@@ -308,15 +325,15 @@ function App() {
     return cards
       .filter((card) => card.rental_candidate === 1)
       .filter((card) => {
-        if (plan === "sense") return card.sense === 1;
-        if (plan === "motivation") return card.logic === 1;
-        if (plan === "impression") return card.logic === 1;
-        if (plan === "anomaly") return card.anomaly === 1;
+        if (calculationPlan === "sense") return card.sense === 1;
+        if (calculationPlan === "motivation") return card.logic === 1;
+        if (calculationPlan === "impression") return card.logic === 1;
+        if (calculationPlan === "anomaly") return card.anomaly === 1;
         return true;
       })
       .map((card) => {
         const limitBreak = 4;
-        const score = calcCardScore(card, abilityDb, context, limitBreak);
+        const score = calcCardScore(card, abilityDb, calculationContext, limitBreak);
 
         return {
           card,
@@ -326,7 +343,7 @@ function App() {
         };
       })
       .sort((a, b) => b.score - a.score);
-  }, [plan, context]);
+  }, [calculationPlan, calculationContext]);
 
   const filteredCards = cards.filter((card) => {
     if (plan === "sense") return card.sense === 1;
@@ -353,7 +370,7 @@ function App() {
       const currentLimitBreak = isOwned ? Number(ownedInfo.limitBreak ?? 0) : 0;
 
       const scoreByLimitBreak = [0, 1, 2, 3, 4].map((limitBreak) => {
-        return calcCardScore(card, abilityDb, context, limitBreak);
+        return calcCardScore(card, abilityDb, calculationContext, limitBreak);
       });
 
       const currentScore = isOwned
@@ -386,7 +403,7 @@ function App() {
     scoreListMode,
     filteredCards,
     calculationOwnedCards,
-    context,
+    calculationContext,
   ]);
 
   function selectRecommendedCardsWithRentalAndPattern(
@@ -484,8 +501,8 @@ function App() {
       const cards = selectRecommendedCardsWithRentalAndPattern(
         ownedCardResults,
         rentalCardResults,
-        minSpCards,
-        type,
+        calculationMinSpCards,
+        calculationType,
         patternName
       );
 
@@ -733,12 +750,17 @@ function App() {
             className="primaryButton"
             onClick={() => {
               setCalculationOwnedCards(ownedCards);
+              setCalculationSettings({
+                mode,
+                plan,
+                type,
+                minSpCards,
+              });
               setShowResult(true);
             }}
           >
             計算開始
           </button>
-
           <div className="resultTabs">
             <button
               className={`commonButton ${resultViewMode === "recommend" ? "activeTabButton" : ""}`}
