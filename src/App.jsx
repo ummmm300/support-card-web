@@ -72,28 +72,28 @@ const NEW_CARD_ID = "card_108"; // あなたとふたり、電車で
 
 function App() {
 
-const [mode, setMode] = useState("legend");
-const [plan, setPlan] = useState("sense");
-const [type, setType] = useState("voda");
-const [minSpCards, setMinSpCards] = useState(0);
+  const [mode, setMode] = useState("legend");
+  const [plan, setPlan] = useState("sense");
+  const [type, setType] = useState("voda");
+  const [minSpCards, setMinSpCards] = useState(0);
 
-const [calculationSettings, setCalculationSettings] = useState({
-  mode: "legend",
-  plan: "sense",
-  type: "voda",
-  minSpCards: 0,
-});
+  const [calculationSettings, setCalculationSettings] = useState({
+    mode: "legend",
+    plan: "sense",
+    type: "voda",
+    minSpCards: 0,
+  });
 
-const calculationMode = calculationSettings.mode;
-const calculationPlan = calculationSettings.plan;
-const calculationType = calculationSettings.type;
-const calculationMinSpCards = calculationSettings.minSpCards;
+  const calculationMode = calculationSettings.mode;
+  const calculationPlan = calculationSettings.plan;
+  const calculationType = calculationSettings.type;
+  const calculationMinSpCards = calculationSettings.minSpCards;
 
-const calculationContext =
-  contextPresets[calculationMode]
-    .plans[calculationPlan]
-    .types[calculationType]
-    .context;
+  const calculationContext =
+    contextPresets[calculationMode]
+      .plans[calculationPlan]
+      .types[calculationType]
+      .context;
 
   const [showResult, setShowResult] = useState(false);
   const [theme, setTheme] = useState(() => {
@@ -144,7 +144,7 @@ const calculationContext =
   const [ownedSearchText, setOwnedSearchText] = useState("");
   const [ownedTypeFilter, setOwnedTypeFilter] = useState("all");
   const [ownedPlanFilter, setOwnedPlanFilter] = useState("all");
-  const [minSpCards, setMinSpCards] = useState(0);
+
 
 
   const context =
