@@ -49,8 +49,51 @@ export const KIND_TO_CONTEXT_KEY = {
   get_focus: "get_focus_count",
 };
 
-export function getLimitBreakIndex(limitBreak) {
-  return Math.max(0, Math.min(4, limitBreak));
+function getLimitBreakIndex(limitBreak) {
+  return Math.max(0, Math.min(4, Number(limitBreak)));
+}
+
+export function getAbilityGradeIndex(limitBreak, abilityIndex) {
+  const lb = Math.max(0, Math.min(4, Number(limitBreak) || 0));
+
+  // abilityIndex:
+  // 0 = ab1
+  // 1 = ab2
+  // 2 = ab4
+  // 3 = ab5
+  // 4 = ab6
+  // 5 = item
+
+  if (abilityIndex === 0) {
+    // ab1: 凸が1上がるごとにグレードが1上がる
+    // 0凸 I / 1凸 II / 2凸 III / 3凸 IV / 4凸 V
+    return lb;
+  }
+
+  if (abilityIndex === 1) {
+    // ab2: 2凸時にグレードII
+    return lb >= 2 ? 1 : 0;
+  }
+
+  if (abilityIndex === 2) {
+    // ab4: 3凸時にグレードII
+    return lb >= 3 ? 1 : 0;
+  }
+
+  if (abilityIndex === 3) {
+    // ab5: 4凸時にグレードII
+    return lb >= 4 ? 1 : 0;
+  }
+
+  if (abilityIndex === 4) {
+    // ab6: 1凸時にグレードII、4凸時にグレードIII
+    if (lb >= 4) return 2;
+    if (lb >= 1) return 1;
+    return 0;
+  }
+
+  // item または想定外の枠は常にI
+  return 0;
 }
 
 
@@ -93,22 +136,28 @@ export function calcAbilityScore(kind, value, context, limitCount) {
   }
 
   return value * count;
+
+  console.log(card.name, "limitBreak:", limitBreak);
 }
+
+
 
 export function calcCardScore(card, abilityDb, context, limitBreak = 0) {
   const tier = (card.ability_tier || card.rarity || "").trim();
-  const idx = getLimitBreakIndex(limitBreak);
 
   let total = 0;
 
-  for (const abilityId of card.abilities) {
+  for (const [abilityIndex, abilityId] of card.abilities.entries()) {
     const ability = abilityDb[`${abilityId}__${tier}`];
 
     if (!ability) continue;
 
+    const idx = getAbilityGradeIndex(limitBreak, abilityIndex);
+    const value = ability.values[idx];
+
     const score = calcAbilityScore(
       ability.kind,
-      ability.values[idx],
+      value,
       context,
       ability.limit_count
     );
