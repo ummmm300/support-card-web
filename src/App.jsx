@@ -621,7 +621,7 @@ function App() {
               alt="サポカ計算機"
             />
             <h1 className="mainTitle">サポカ計算機</h1>
-            <span className="version">v1.0.2 - サポカの凸に関する不具合の修正</span>
+            <span className="version">v1.0.2 - 複数の不具合の修正</span>
             <p className="appDescription">
               所持サポカからおすすめ上位6枚を自動計算します。
             </p>
@@ -655,10 +655,12 @@ function App() {
                   <li>SP枚数の条件を変更しても反映されないことがあった</li>
                 </ul>
 
-                <p><strong>v1.0.2</strong></p>
+                                <p><strong>v1.0.2</strong></p>
                 <span className="versionDate"> - 2026/05/01</span>
+                <p className="changelogNote">以下の問題への対応・修正を行いました。：</p>
                 <ul>
-                  <li>サポカの凸段階による点数計算の不具合を修正しました。</li>
+                  <li>一部の状況でサポカの凸状況が反映されていなかった</li>
+                  <li>「もうっ！　冷たいよ！」がSP枠として扱われていなかった</li>
                 </ul>
 
 
