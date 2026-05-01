@@ -162,7 +162,27 @@ export function calcCardScore(card, abilityDb, context, limitBreak = 0) {
       ability.limit_count
     );
 
+    if (card.name === "かかっていらっしゃい！") {
+      console.log({
+        cardName: card.name,
+        limitBreak,
+        abilityIndex,
+        abilityId,
+        tier,
+        gradeIndex: idx,
+        gradeLabel: ["I", "II", "III", "IV", "V"][idx],
+        kind: ability.kind,
+        value,
+        limit_count: ability.limit_count,
+        score,
+      });
+    }
+
     total += score;
+  }
+
+  if (card.name === "かかっていらっしゃい！") {
+    console.log("total:", total);
   }
 
   return total;
