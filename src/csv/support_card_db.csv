@@ -90,7 +90,7 @@ card_088,わたしたち、やればできる,SSR,SR,0,Da,0,1,0,param_bonus_da_i
 card_089,可愛いと可愛いで可愛い！,SSR,SSR,28,Vo,1,1,1,flat_vo_id,sp_rate_id,on_sp_vo_id,get_active_id,on_param_event_id,none_id,,1,SP
 card_090,私の目に狂いはない,SSR,SSR,0,Vi,1,1,1,param_bonus_vi_id,none_id,on_class_id,on_enhance_id,on_param_event_id,none_id,,1,
 card_091,また、あんなに無理をして,SSR,SSR,0,Vo,1,1,1,param_bonus_vo_id,none_id,on_outing_id,get_mental_id,on_param_event_id,none_id,,1,
-card_092,あら、奇遇ね,SSR,SSR,0,Vi,1,1,1,flat_vo_id,none_id,on_lesson_vo_id,on_class_id,on_param_event_id,none_id,,1,
+card_092,あら、奇遇ね,SSR,SSR,0,Vo,1,1,1,flat_vo_id,none_id,on_lesson_vo_id,on_class_id,on_param_event_id,none_id,,1,
 card_093,まじか。,SSR,SSR,0,Da,1,1,1,flat_da_id,none_id,on_lesson_da_id,on_consult_id,on_param_event_id,none_id,,1,
 card_094,仕事のつもりで臨みなさい。,SSR,SR,0,Vi,1,1,1,flat_vi_ssr_id,none_id,get_mental_id,on_lesson_vi_id,on_param_event_ssr_id,none_id,,1,
 card_095,ほら、一緒に持と♪,SSR,SSR,0,Da,1,1,1,param_bonus_da_id,none_id,on_lesson_da_id,get_active_id,on_param_event_id,none_id,,1,

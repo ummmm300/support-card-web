@@ -849,7 +849,7 @@ export const contextPresets = {
         },
     },
 
-    /*
+
     enhancedLegendTheory: {
         label: "初レジェンド - 強化月間（理論値踏み）",
         plans: {
@@ -948,5 +948,5 @@ export const contextPresets = {
                 },
             },
         },
-    },*/
+    },
 }
