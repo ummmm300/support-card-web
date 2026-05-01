@@ -67,7 +67,6 @@ def convert_card_db():
             abilities = [
                 row.get("ab1", "none_id").strip() or "none_id",
                 row.get("ab2", "none_id").strip() or "none_id",
-                row.get("ab3", "none_id").strip() or "none_id",
                 row.get("ab4", "none_id").strip() or "none_id",
                 row.get("ab5", "none_id").strip() or "none_id",
                 row.get("ab6", "none_id").strip() or "none_id",

@@ -56,17 +56,8 @@ function getLimitBreakIndex(limitBreak) {
 export function getAbilityGradeIndex(limitBreak, abilityIndex) {
   const lb = Math.max(0, Math.min(4, Number(limitBreak) || 0));
 
-  // abilityIndex:
-  // 0 = ab1
-  // 1 = ab2
-  // 2 = ab4
-  // 3 = ab5
-  // 4 = ab6
-  // 5 = item
-
   if (abilityIndex === 0) {
     // ab1: 凸が1上がるごとにグレードが1上がる
-    // 0凸 I / 1凸 II / 2凸 III / 3凸 IV / 4凸 V
     return lb;
   }
 
@@ -92,7 +83,7 @@ export function getAbilityGradeIndex(limitBreak, abilityIndex) {
     return 0;
   }
 
-  // item または想定外の枠は常にI
+  // itemは常にI
   return 0;
 }
 
@@ -162,7 +153,7 @@ export function calcCardScore(card, abilityDb, context, limitBreak = 0) {
       ability.limit_count
     );
 
-    if (card.name === "かかっていらっしゃい！") {
+    if (card.name === "一番星と王子様") {
       console.log({
         cardName: card.name,
         limitBreak,
@@ -180,10 +171,5 @@ export function calcCardScore(card, abilityDb, context, limitBreak = 0) {
 
     total += score;
   }
-
-  if (card.name === "かかっていらっしゃい！") {
-    console.log("total:", total);
-  }
-
   return total;
 }
