@@ -850,7 +850,7 @@ export const contextPresets = {
     },
 
 
-    enhancedLegendTheory: {
+ /*   enhancedLegendTheory: {
         label: "初レジェンド - 強化月間（理論値踏み）",
         plans: {
             anomaly: {
@@ -944,9 +944,9 @@ export const contextPresets = {
                             param_event_count: 1,
                             param_event_ssr_count: 1,
                         },
-                    },
+                  },
                 },
             },
         },
     },
-}
+  */}

@@ -96,6 +96,7 @@ function App() {
       .types[calculationType]
       .context;
 
+
   const [showResult, setShowResult] = useState(false);
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem("theme") || "light";
@@ -111,6 +112,8 @@ function App() {
 
   const [showChangelog, setShowChangelog] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+  const [showStatus, setShowStatus] = useState(false);
+
 
   useEffect(() => {
     localStorage.setItem("theme", theme);
@@ -597,17 +600,24 @@ function App() {
   return (
     <main className={`app ${theme === "dark" ? "darkMode" : "lightMode"}`}>
       <div className="mainCard">
-
-        <div className="topRightButtons">
-          <button
-            className="commonButton smallButton"
-            onClick={() => setShowChangelog(true)}
-          >
-            更新履歴
-          </button>
-        </div>
-
         <section className="calculator">
+
+          <div className="topRightButtons">
+            <button
+              className="commonButton smallButton"
+              onClick={() => setShowChangelog(true)}
+            >
+              更新履歴
+            </button>
+
+            <button
+              className="commonButton smallButton"
+              onClick={() => setShowStatus(true)}
+            >
+              対応状況
+            </button>
+          </div>
+
           <button
             className="themeToggleButton"
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
@@ -655,7 +665,7 @@ function App() {
                   <li>SP枚数の条件を変更しても反映されないことがあった</li>
                 </ul>
 
-                                <p><strong>v1.0.2</strong></p>
+                <p><strong>v1.0.2</strong></p>
                 <span className="versionDate"> - 2026/05/01</span>
                 <p className="changelogNote">以下の問題への対応・修正を行いました。：</p>
                 <ul>
@@ -665,6 +675,50 @@ function App() {
                 </ul>
 
 
+              </div>
+            </div>
+          )}
+
+          {showStatus && (
+            <div className="modalOverlay" onClick={() => setShowStatus(false)}>
+              <div className="helpModal statusModal" onClick={(e) => e.stopPropagation()}>
+                <button
+                  className="modalCloseButton"
+                  onClick={() => setShowStatus(false)}
+                >
+                </button>
+
+                <h2>対応状況</h2>
+                <p className="changelogNote">
+                  フォーム等でいただいた不具合報告・ご意見・ご要望への回答ページです。
+                </p>
+
+                <ul className="statusList">
+                  <li>
+                    <p className="statusTitle">更新の際に毎回csvファイルを変えないでほしい</p>
+                    <div className="statusBody">
+                      <p>現状はHIF編以降もこのサイトで運営しようと考えているため、</p>
+                      <p>これ以上、急にcsvファイルの中身や様式が変わることはありません。</p>
+                      <p>稼働初期に何度もcsvファイルを作り直してしまい、申し訳ございません。</p>
+                      <span className="versionDate"> - 2026/05/06</span>
+                    </div>
+                  </li>
+
+                  <li>
+                    <p className="statusTitle">
+                      SSR獲得枚数が少なく、「あなたとふたり、電車で」の点数が想定より低い
+                    </p>
+                    <div className="statusBody">
+                      <p>計算ロジック自体は問題がないので、こちらのご意見は</p>
+                      <p>「初レジェンド - 強化月間（理論値踏み）」についてだと私は解釈しました。</p>
+                      <p>理論値踏みとしてSSR札=16枚としたものの、最大値では20枚ほど取れるらしく、</p>
+                      <p>この差分が点数の低さに繋がっていました。</p>
+                      <p>運営者自身が「本当の理論値」の踏み方や獲得枚数を熟知していないので、</p>
+                      <p>ひとまずは理論値踏みの項目を削除し、また改めて実装したいと考えています。</p>
+                      <span className="versionDate"> - 2026/05/06</span>
+                    </div>
+                  </li>
+                </ul>
               </div>
             </div>
           )}

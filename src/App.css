@@ -55,11 +55,6 @@ body.darkModeBody {
   box-sizing: border-box;
 }
 
-body {
-  margin: 0;
-  font-family: system-ui, sans-serif;
-  background: #f5f5f5;
-}
 
 .calculator {
   width: 100%;
@@ -69,12 +64,13 @@ body {
   padding: 16px;
   border-radius: 16px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  position: relative;
 }
 
 .app.darkMode .calculator {
   box-shadow: none;
+  max-width: 100%;
 }
-
 
 label,
 h1,
@@ -147,10 +143,6 @@ input {
 
 .cardInfo p {
   margin: 6px 0;
-}
-
-.ownedSection {
-  margin-top: 32px;
 }
 
 .ownedSection {
@@ -243,8 +235,6 @@ input {
   padding: 14px;
   border: none;
   border-radius: 12px;
-  background: #222;
-  color: white;
   font-weight: bold;
   cursor: pointer;
 }
@@ -255,12 +245,6 @@ input {
 
 .resultSection {
   margin-top: 24px;
-}
-
-.ownedSection {
-  margin-top: 40px;
-  padding-top: 32px;
-  border-top: 1px solid #ddd;
 }
 
 .secondaryButton {
@@ -355,14 +339,6 @@ input {
   }
 }
 
-.clickable {
-  cursor: pointer;
-}
-
-.clickable:hover {
-  background: #f0f4ff;
-}
-
 .resultTable {
   background: var(--card-bg);
   color: var(--text-color);
@@ -372,7 +348,6 @@ input {
   margin-top: 10px;
   margin-bottom: 28px;
   font-size: 14px;
-  background: #fff;
 }
 
 .resultTable th,
@@ -450,35 +425,6 @@ body.darkModeBody {
 
 body.darkModeBody #root {
   background: #121212;
-}
-
-.app {
-  justify-content: center;
-}
-
-.app.darkMode .calculator {
-  max-width: 100%;
-}
-
-.app {
-  padding-left: 0;
-  padding-right: 0;
-}
-
-.app {
-  min-height: 100vh;
-  padding: 24px;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-}
-
-.calculator {
-  width: 100%;
-  max-width: 900px !important;
-  margin: 0 auto;
-  padding: 16px;
-  border-radius: 16px;
 }
 
 .resultTable th,
@@ -683,6 +629,9 @@ body.darkModeBody #root {
   position: absolute;
   top: 16px;
   right: 16px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
 
 .commonButton {
@@ -707,6 +656,7 @@ body.darkModeBody #root {
   width: min(900px, 100%);
   margin: 0 auto;
   position: relative;
+  box-sizing: border-box;
 }
 
 
@@ -740,11 +690,6 @@ body.darkModeBody #root {
   border-width: 2px;
 }
 
-.tableScroll {
-  width: 100%;
-  overflow-x: auto;
-}
-
 .scoreListTable {
   min-width: 760px;
 }
@@ -766,10 +711,6 @@ body.darkModeBody #root {
   max-width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-}
-
-.scoreListTable {
-  min-width: 760px;
 }
 
 .resultTable {
@@ -814,7 +755,6 @@ body.darkModeBody #root {
 
 .mainTitle {
   font-size: clamp(22px, 5vw, 32px);
-  font-size: 28px;
   font-weight: bold;
   margin-bottom: 8px;
 }
@@ -827,7 +767,7 @@ body.darkModeBody #root {
   /* ←顔の位置を調整 */
   border-radius: 16px;
   margin-bottom: 20px;
- box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
 }
 
 @media (max-width: 600px) {
@@ -857,9 +797,6 @@ body.darkModeBody #root {
   width: 100%;
 }
 
-.ownedSection {
-  width: 100%;
-}
 
 .ownedList {
   max-width: none;
@@ -874,5 +811,64 @@ body.darkModeBody #root {
 @media (max-width: 600px) {
   .filterRow {
     grid-template-columns: 1fr;
+  }
+}
+
+.statusModal .statusList {
+  padding-left: 1.4rem;
+  margin: 1rem 0 0;
+}
+
+.statusModal .statusList > li {
+  margin-bottom: 2rem;
+}
+
+.statusModal .statusTitle {
+  font-weight: 700;
+  margin: 0 0 0.8rem 0;
+  line-height: 1.6;
+}
+
+.statusModal .statusBody {
+  margin-top: 0;
+}
+
+.statusModal .statusBody p {
+  margin: 0 0 0.45rem 0;
+  line-height: 1.7;
+}
+
+.statusModal .statusBody p + p {
+  margin-top: 0;
+}
+
+.statusModal .versionDate {
+  display: inline-block;
+  margin-top: 0.4rem;
+}
+
+@media (max-width: 600px) {
+  .mainCard {
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .topRightButtons {
+    position: static;
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+    margin: 0 0 12px 0;
+    width: 100%;
+    box-sizing: border-box;
+    flex-wrap: wrap;
+  }
+
+  .topRightButtons .smallButton {
+    font-size: 11px;
+    padding: 5px 8px;
+    min-height: auto;
+    border-radius: 8px;
   }
 }
