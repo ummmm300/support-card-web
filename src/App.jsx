@@ -631,7 +631,7 @@ function App() {
               alt="サポカ計算機"
             />
             <h1 className="mainTitle">サポカ計算機</h1>
-            <span className="version">v1.0.2 - 複数の不具合の修正</span>
+            <span className="version">v1.0.3 - 「対応状況」を追加</span>
             <p className="appDescription">
               所持サポカからおすすめ上位6枚を自動計算します。
             </p>
@@ -672,6 +672,13 @@ function App() {
                   <li>一部の状況でサポカの凸状況が反映されていなかった</li>
                   <li>「もうっ！　冷たいよ！」がSP枠として扱われていなかった</li>
                   <li>ロジックのM強化回数が想定より低くなっていた</li>
+                </ul>
+
+                <p><strong>v1.0.3</strong></p>
+                <span className="versionDate"> - 2026/05/06</span>
+                <p className="changelogNote">サイトに以下の要素を追加しました。：</p>
+                <ul>
+                  <li>「対応状況」（いただいた不具合報告や意見・要望への回答）</li>
                 </ul>
 
 
