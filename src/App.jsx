@@ -234,10 +234,12 @@ function App() {
   }
 
   function getSpRate(result) {
-    const card = result.card;
+    if (!result) return 0;
+
+    const card = result.card ?? result;
     const limitBreak = result.limitBreak ?? 0;
 
-    if (!Array.isArray(card.abilities)) return 0;
+    if (!card || !Array.isArray(card.abilities)) return 0;
 
     const abilityIndex = card.abilities.indexOf("sp_rate_id");
     if (abilityIndex === -1) return 0;
@@ -248,7 +250,7 @@ function App() {
     if (!ability) return 0;
 
     const idx = getAbilityGradeIndex(limitBreak, abilityIndex);
-    return ability.values[idx] ?? 0;
+    return Number(ability.values[idx] ?? 0);
   }
 
   function hasSpRateUp(card) {
@@ -488,6 +490,15 @@ function App() {
         ? scoreByLimitBreak[currentLimitBreak]
         : 0;
 
+      const spRateLimitBreak = isAllFourLimitBreakMode
+        ? 4
+        : currentLimitBreak;
+
+      const spRate = getSpRate({
+        card,
+        limitBreak: spRateLimitBreak,
+      });
+
       return {
         card,
         isOwned,
@@ -498,6 +509,7 @@ function App() {
         score2: scoreByLimitBreak[2],
         score3: scoreByLimitBreak[3],
         score4: scoreByLimitBreak[4],
+        spRate,
       };
     });
 
@@ -1101,7 +1113,7 @@ function App() {
                             <td>{formatScore(result.score2)}</td>
                             <td>{formatScore(result.score3)}</td>
                             <td>{formatScore(result.score4)}</td>
-                            <td>{getSpRate(result.card)}</td>
+                            <td>{result.spRate}</td>
                           </tr>
                         ))}
                       </tbody>
