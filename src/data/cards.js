@@ -1446,7 +1446,7 @@ export const cards = [
       "on_lesson_vi_id",
       "get_active_id",
       "on_param_event_id",
-      "on_class_vi30_id"
+      "on_class_vi22_id"
     ],
     "synergy_tags": []
   },
@@ -2337,6 +2337,8 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "ssr_gain"
+    ]
   }
 ];

@@ -11,9 +11,9 @@ export const KIND_TO_CONTEXT_KEY = {
   on_sp_vi: "sp_vi_count",
   on_sp_20: "totalSpLessonCount",
 
-  on_lesson_vo: "lesson_count",
-  on_lesson_da: "lesson_count",
-  on_lesson_vi: "lesson_count",
+  on_lesson_vo: "lesson_vo_count",
+  on_lesson_da: "lesson_da_count",
+  on_lesson_vi: "lesson_vi_count",
   on_normal_lesson: "normal_lesson_count",
 
   on_enhance: "enhance_count",
@@ -156,15 +156,20 @@ export function calcCardScore(card, abilityDb, context, limitBreak = 0) {
 }
 
 export function calcDeckSynergyScore(deckResults, abilityDb, context) {
-  const ssrGainCount = deckResults.filter((result) =>
+  const ssrGainCards = deckResults.filter((result) =>
     result.card.synergy_tags?.includes("ssr_gain")
-  ).length;
+  );
+
+  const ssrGainCount = ssrGainCards.length;
 
   if (ssrGainCount === 0) {
-    return 0;
+    return {
+      totalScore: 0,
+      bonusByCardId: {},
+    };
   }
 
-  let synergyScore = 0;
+  let totalSynergyScore = 0;
 
   for (const result of deckResults) {
     const card = result.card;
@@ -191,9 +196,19 @@ export function calcDeckSynergyScore(deckResults, abilityDb, context) {
         );
       }
 
-      synergyScore += value * additionalCount;
+      totalSynergyScore += value * additionalCount;
     }
   }
 
-  return synergyScore;
+  const bonusByCardId = {};
+  const bonusPerSsrGainCard = totalSynergyScore / ssrGainCount;
+
+  for (const result of ssrGainCards) {
+    bonusByCardId[result.card.card_id] = bonusPerSsrGainCard;
+  }
+
+  return {
+    totalScore: totalSynergyScore,
+    bonusByCardId,
+  };
 }

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import "./App.css";
-import { calcCardScore, calcDeckSynergyScore } from "./lib/calc";
+import { calcCardScore, calcDeckSynergyScore, getAbilityGradeIndex } from "./lib/calc";
 import { abilityDb } from "./data/abilityDb";
 import { cards } from "./data/cards";
 import { contextPresets } from "./data/contextPresets";
@@ -14,7 +14,9 @@ const CONTEXT_LABELS = {
   sp_da_count: "DaSPレッスン回数",
   sp_vi_count: "ViSPレッスン回数",
 
-  lesson_count: "レッスン回数",
+  lesson_vo_count: "Voレッスン回数",
+  lesson_da_count: "Daレッスン回数",
+  lesson_vi_count: "Viレッスン回数",
   normal_lesson_count: "通常レッスン回数",
 
   enhance_count: "強化回数",
@@ -69,6 +71,8 @@ const PATTERN_COUNTS = {
   "2/3/1": [2, 3, 1],
   "2/2/2": [2, 2, 2],
 };
+
+const CANDIDATE_LIMIT_PER_TYPE = 9;
 
 const NEW_CARD_ID = "card_108"; // あなたとふたり、電車で
 
@@ -229,9 +233,22 @@ function App() {
     reader.readAsText(file);
   }
 
-  function getSpRate(card) {
-    if (!hasSpRateUp(card)) return 0;
-    return Number(card.sp_rate ?? 0);
+  function getSpRate(result) {
+    const card = result.card;
+    const limitBreak = result.limitBreak ?? 0;
+
+    if (!Array.isArray(card.abilities)) return 0;
+
+    const abilityIndex = card.abilities.indexOf("sp_rate_id");
+    if (abilityIndex === -1) return 0;
+
+    const tier = (card.ability_tier || card.rarity || "").trim();
+    const ability = abilityDb[`sp_rate_id__${tier}`];
+
+    if (!ability) return 0;
+
+    const idx = getAbilityGradeIndex(limitBreak, abilityIndex);
+    return ability.values[idx] ?? 0;
   }
 
   function hasSpRateUp(card) {
@@ -292,6 +309,31 @@ function App() {
     return result;
   }
 
+  function isSynergyRelatedCard(result) {
+    return result.card.synergy_tags?.includes("ssr_gain") ?? false;
+  }
+
+  function limitCandidatesByType(results, limit) {
+    const sorted = [...results].sort((a, b) => b.score - a.score);
+
+    const topCandidates = sorted.slice(0, limit);
+    const synergyCandidates = sorted.filter(isSynergyRelatedCard);
+
+    const merged = [...topCandidates];
+
+    for (const candidate of synergyCandidates) {
+      const alreadyExists = merged.some(
+        (result) => result.card.card_id === candidate.card.card_id
+      );
+
+      if (!alreadyExists) {
+        merged.push(candidate);
+      }
+    }
+
+    return merged;
+  }
+
   function findBestOwnedCardsByPattern(
     ownedResults,
     pattern,
@@ -302,7 +344,10 @@ function App() {
     const groups = Object.fromEntries(
       TYPE_ORDER.map((cardType) => [
         cardType,
-        ownedResults.filter((result) => result.card.param_type === cardType),
+        limitCandidatesByType(
+          ownedResults.filter((result) => result.card.param_type === cardType),
+          CANDIDATE_LIMIT_PER_TYPE
+        ),
       ])
     );
 
@@ -326,11 +371,13 @@ function App() {
           if (spCount < minSpCards) continue;
 
           const baseScore = team.reduce((sum, result) => sum + result.score, 0);
-          const synergyScore = calcDeckSynergyScore(
+          const synergyResult = calcDeckSynergyScore(
             team,
             abilityDb,
             calculationContext
           );
+
+          const synergyScore = synergyResult.totalScore;
           const totalScore = baseScore + synergyScore;
 
           if (totalScore > bestTotalScore) {
@@ -340,6 +387,7 @@ function App() {
               team,
               baseScore,
               synergyScore,
+              synergyBonusByCardId: synergyResult.bonusByCardId,
               totalScore,
             };
           }
@@ -443,6 +491,7 @@ function App() {
       return {
         card,
         isOwned,
+        limitBreak: currentLimitBreak,
         currentScore,
         score0: scoreByLimitBreak[0],
         score1: scoreByLimitBreak[1],
@@ -482,6 +531,7 @@ function App() {
       cards: [],
       baseScore: 0,
       synergyScore: 0,
+      synergyBonusByCardId: {},
       totalScore: 0,
     };
 
@@ -523,7 +573,20 @@ function App() {
 
       if (!result) continue;
 
-      const sortedCards = result.team.sort((a, b) => b.score - a.score);
+      const cardsWithDisplayScore = result.team.map((cardResult) => {
+        const synergyBonus =
+          result.synergyBonusByCardId?.[cardResult.card.card_id] ?? 0;
+
+        return {
+          ...cardResult,
+          synergyBonus,
+          displayScore: cardResult.score + synergyBonus,
+        };
+      });
+
+      const sortedCards = cardsWithDisplayScore.sort(
+        (a, b) => b.displayScore - a.displayScore
+      );
 
       if (result.totalScore > bestTotalScore) {
         bestTotalScore = result.totalScore;
@@ -531,6 +594,7 @@ function App() {
           cards: sortedCards,
           baseScore: result.baseScore,
           synergyScore: result.synergyScore,
+          synergyBonusByCardId: result.synergyBonusByCardId,
           totalScore: result.totalScore,
         };
       }
@@ -654,7 +718,7 @@ function App() {
               alt="サポカ計算機"
             />
             <h1 className="mainTitle">サポカ計算機</h1>
-            <span className="version">v1.0.3 - 「対応状況」を追加</span>
+            <span className="version">v1.0.4 - サポカ札(SSR)による加点を反映</span>
             <p className="appDescription">
               所持サポカからおすすめ上位6枚を自動計算します。
             </p>
@@ -683,7 +747,7 @@ function App() {
                 <span className="versionDate"> - 2026/04/29</span>
                 <p className="changelogNote">以下の問題への対応・修正を行いました。：</p>
                 <ul>
-                  <li>傾向外のSP枚数をカウントしてしまっていた</li>
+                  <li>傾向外のSP枚数もカウントされていた</li>
                   <li>"SP時に20枚以上~"アビリティが反映されていなかった</li>
                   <li>SP枚数の条件を変更しても反映されないことがあった</li>
                 </ul>
@@ -704,7 +768,19 @@ function App() {
                   <li>「対応状況」（いただいた不具合報告や意見・要望への回答）</li>
                 </ul>
 
-
+                <p><strong>v1.0.4</strong></p>
+                <span className="versionDate"> - 2026/05/07</span>
+                <p className="changelogNote">サイトに以下の機能を追加しました。：</p>
+                <ul>
+                  <li>SSRサポカ札による「SSR札獲得」アビリティの追加発動分を、</li>
+                  <p>おすすめ編成の計算に反映しました</p>
+                  <li>SSRサポカ札のシナジーへの対応に伴い、計算条件のSSR獲得枚数を調整しました</li>
+                  <li>「初レジェンド - 強化月間（アノマリー）」の理論値踏みに仮対応しました</li>
+                </ul>
+                <p className="changelogNote">以下の問題への対応・修正を行いました。：</p>
+                <ul>
+                  <li>SP率表示の項目でサポカの凸状況が正しく反映されていなかった</li>
+                </ul>
               </div>
             </div>
           )}
@@ -739,13 +815,12 @@ function App() {
                       「あなたとふたり、電車で」の点数が想定より低くおすすめされづらい
                     </p>
                     <div className="statusBody">
-                      <p>現状の当計算機は"SSRサポカ札の獲得"自体には点数をつけていないので、</p>
-                      <p>たとえば「SSRサポカ札の獲得」「カタメコイメでの削除」等、</p>
-                      <p>他のサポカの点数を誘発する効果を考慮しておらず、</p>
-                      <p>結果としてサポカ点数の違和感に繋がっています。</p>
-                      <p>今は技術上「間接的に点数を稼ぐサポカ札/Pアイテム」を考慮できないので、</p>
-                      <p>計算機に落としこむ方法を考察・検証していきたい所存です。</p>
-                      <span className="versionDate"> - 2026/05/06</span>
+                      <p>このご意見を受けて、SSRサポカ札獲得のシナジーによる加点を反映するようにしました。</p>
+                      <p>「あなたとふたり、電車で」や「あたしの勝ち、ですね～！」等、</p>
+                      <p>サポカ札を持つサポカの点数が全体的に底上げされています。</p>
+                      <p>今後は、Pアイテム「カタメコイメ」等の複雑な挙動をするサポカも同様に</p>
+                      <p>計算ロジックに組み込めるよう進めてまいります。</p>
+                      <span className="versionDate"> - 2026/05/07（追記）</span>
                     </div>
                   </li>
                 </ul>
@@ -960,9 +1035,9 @@ function App() {
                                 <tr key={result.card.card_id}>
                                   <td>{result.isRental ? "○" : ""}</td>
                                   <td>{result.card.name}</td>
-                                  <td>{result.score.toFixed(1)}</td>
+                                  <td>{formatScore(result.displayScore ?? result.score)}</td>
                                   <td>{result.card.param_type}</td>
-                                  <td>{getSpRate(result.card)}</td>
+                                  <td>{getSpRate(result)}</td>
                                 </tr>
                               ))}
                             </tbody>
