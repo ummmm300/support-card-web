@@ -1124,11 +1124,11 @@ export const abilityDb = {
   "on_class_vi22_id__SSR": {
     "kind": "on_class",
     "values": [
-      30.0,
-      30.0,
-      30.0,
-      30.0,
-      30.0
+      22.0,
+      22.0,
+      22.0,
+      22.0,
+      22.0
     ],
     "limit_count": 1.0
   },

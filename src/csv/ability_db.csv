@@ -101,7 +101,7 @@ on_special_training_vo30_id,SSR,お城,on_special_training,30,30,30,30,30,1,
 get_motivation_vo60_id,SSR,魂ラン,get_motivation,60,60,60,60,60,1,
 get_focus_da60_id,SSR,ピークタイム,get_focus,60,60,60,60,60,1,
 on_class_da30_id,SSR,パワー弁当,on_class,30,30,30,30,30,1,
-on_class_vi22_id,SSR,とうちょー,on_class,30,30,30,30,30,1,1回発動として計算
+on_class_vi22_id,SSR,とうちょー,on_class,22,22,22,22,22,1,1回発動として計算
 get_all_out_da60_id,SSR,ポン,get_all_out,60,60,60,60,60,1,
 get_reserve_vo20_id,SR,お近づきの印,get_reserve,20,20,20,20,20,1,
 on_consult_vo30_id,SR,じゅーなん,on_consult,30,30,30,30,30,1,
