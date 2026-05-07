@@ -72,7 +72,7 @@ const PATTERN_COUNTS = {
   "2/2/2": [2, 2, 2],
 };
 
-const CANDIDATE_LIMIT_PER_TYPE = 9;
+const CANDIDATE_LIMIT_PER_TYPE = 7;
 
 const NEW_CARD_ID = "card_108"; // あなたとふたり、電車で
 
@@ -82,18 +82,24 @@ function App() {
   const [plan, setPlan] = useState("sense");
   const [type, setType] = useState("voda");
   const [minSpCards, setMinSpCards] = useState(0);
+  const [spTypePriority, setSpTypePriority] = useState("none");
 
   const [calculationSettings, setCalculationSettings] = useState({
     mode: "legend",
     plan: "sense",
     type: "voda",
     minSpCards: 0,
+    spTypePriority: "none",
   });
 
   const calculationMode = calculationSettings.mode;
   const calculationPlan = calculationSettings.plan;
   const calculationType = calculationSettings.type;
   const calculationMinSpCards = calculationSettings.minSpCards;
+  const calculationSpTypePriority =
+    calculationSettings?.spTypePriority ?? "none";
+  const minDaSpCards =
+    calculationSpTypePriority === "da2" ? 2 : 0;
 
   const calculationContext =
     contextPresets[calculationMode]
@@ -119,6 +125,8 @@ function App() {
   const [showHelp, setShowHelp] = useState(false);
   const [showStatus, setShowStatus] = useState(false);
 
+  const shouldShowSpTypePriority =
+    mode === "enhancedLegendTheory" && Number(minSpCards) >= 3;
 
   useEffect(() => {
     localStorage.setItem("theme", theme);
@@ -131,6 +139,12 @@ function App() {
       document.documentElement.classList.remove("darkModeHtml");
     }
   }, [theme]);
+
+  useEffect(() => {
+    if (!shouldShowSpTypePriority) {
+      setSpTypePriority("none");
+    }
+  }, [shouldShowSpTypePriority]);
 
   const [ownedCards, setOwnedCards] = useState(() => {
     const saved = localStorage.getItem("ownedCards");
@@ -253,6 +267,10 @@ function App() {
     return Number(ability.values[idx] ?? 0);
   }
 
+  function isDaSpCard(result) {
+    return result?.card?.param_type === "Da" && getSpRate(result) > 0;
+  }
+
   function hasSpRateUp(card) {
     return Array.isArray(card.abilities)
       ? card.abilities.includes("sp_rate_id")
@@ -312,18 +330,43 @@ function App() {
   }
 
   function isSynergyRelatedCard(result) {
-    return result.card.synergy_tags?.includes("ssr_gain") ?? false;
+    const tags = result.card.synergy_tags ?? [];
+
+    return (
+      tags.includes("ssr_gain") ||
+      tags.includes("p_item_gain")
+    );
   }
 
-  function limitCandidatesByType(results, limit) {
+  function limitCandidatesByType(
+    results,
+    limit,
+    { requireDaSp = false, daSpExtraLimit = 4, synergyExtraLimit = 4 } = {}
+  ) {
     const sorted = [...results].sort((a, b) => b.score - a.score);
 
     const topCandidates = sorted.slice(0, limit);
-    const synergyCandidates = sorted.filter(isSynergyRelatedCard);
 
-    const merged = [...topCandidates];
+    const ssrGainCandidates = sorted
+      .filter((result) => result.card.synergy_tags?.includes("ssr_gain"))
+      .slice(0, synergyExtraLimit);
 
-    for (const candidate of synergyCandidates) {
+    const pItemGainCandidates = sorted
+      .filter((result) => result.card.synergy_tags?.includes("p_item_gain"))
+      .slice(0, synergyExtraLimit);
+
+    const daSpCandidates = requireDaSp
+      ? sorted.filter(isDaSpCard).slice(0, daSpExtraLimit)
+      : [];
+
+    const merged = [];
+
+    for (const candidate of [
+      ...topCandidates,
+      ...ssrGainCandidates,
+      ...pItemGainCandidates,
+      ...daSpCandidates,
+    ]) {
       const alreadyExists = merged.some(
         (result) => result.card.card_id === candidate.card.card_id
       );
@@ -336,26 +379,47 @@ function App() {
     return merged;
   }
 
-  function findBestOwnedCardsByPattern(
+  function findBestOwnedCardsByPattern({
     ownedResults,
+    rentalResult,
     pattern,
     minSpCards,
-    type,
-    rentalCard
-  ) {
+    minDaSpCards,
+    trend,
+    abilityDb,
+    calculationContext,
+  }) {
+
     const groups = Object.fromEntries(
       TYPE_ORDER.map((cardType) => [
         cardType,
         limitCandidatesByType(
           ownedResults.filter((result) => result.card.param_type === cardType),
-          CANDIDATE_LIMIT_PER_TYPE
+          CANDIDATE_LIMIT_PER_TYPE,
+          {
+            requireDaSp: minDaSpCards > 0 && cardType === "Da",
+            daSpExtraLimit: 4,
+            synergyExtraLimit: 3,
+          }
         ),
       ])
     );
 
-    const choices = TYPE_ORDER.map((cardType) =>
-      combinations(groups[cardType], pattern[cardType] ?? 0)
-    );
+    const rentalDaSpCount = rentalResult && isDaSpCard(rentalResult) ? 1 : 0;
+    const requiredOwnedDaSpCount = Math.max(0, minDaSpCards - rentalDaSpCount);
+
+    const choices = TYPE_ORDER.map((cardType) => {
+      const comboList = combinations(groups[cardType], pattern[cardType] ?? 0);
+
+      if (cardType !== "Da" || requiredOwnedDaSpCount <= 0) {
+        return comboList;
+      }
+
+      return comboList.filter((combo) => {
+        const daSpCount = combo.filter(isDaSpCard).length;
+        return daSpCount >= requiredOwnedDaSpCount;
+      });
+    });
 
     let bestResult = null;
     let bestTotalScore = -Infinity;
@@ -364,15 +428,24 @@ function App() {
       for (const daGroup of choices[1]) {
         for (const viGroup of choices[2]) {
           const ownTeam = [...voGroup, ...daGroup, ...viGroup];
-          const team = rentalCard ? [...ownTeam, rentalCard] : ownTeam;
+          const team = rentalResult ? [...ownTeam, rentalResult] : ownTeam;
 
-          const spCount = team.filter((result) =>
-            hasValidSpRateUp(result.card, type)
+          const spCardCount = team.filter((result) =>
+            hasValidSpRateUp(result.card, trend)
           ).length;
 
-          if (spCount < minSpCards) continue;
+          if (spCardCount < minSpCards) {
+            continue;
+          }
+
+          const daSpCardCount = team.filter(isDaSpCard).length;
+
+          if (daSpCardCount < minDaSpCards) {
+            continue;
+          }
 
           const baseScore = team.reduce((sum, result) => sum + result.score, 0);
+
           const synergyResult = calcDeckSynergyScore(
             team,
             abilityDb,
@@ -475,7 +548,9 @@ function App() {
 
     const targetCards = isAllFourLimitBreakMode
       ? filteredCards
-      : filteredCards.filter((card) => calculationOwnedCards[card.card_id]);
+      : filteredCards.filter(
+        (card) => calculationOwnedCards[card.card_id]?.owned
+      );
 
     const results = targetCards.map((card) => {
       const ownedInfo = calculationOwnedCards[card.card_id];
@@ -530,14 +605,17 @@ function App() {
     calculationContext,
   ]);
 
-  function selectRecommendedCardsWithRentalAndPattern(
+  function selectRecommendedCardsWithRentalAndPattern({
     ownedResults,
     rentalResults,
+    patternName,
     minSpCards,
-    type,
-    patternName
-  ) {
-    const pattern = makeTypePattern(type, patternName);
+    minDaSpCards,
+    trend,
+    abilityDb,
+    calculationContext,
+  }) {
+    const pattern = makeTypePattern(trend, patternName);
 
     let bestResult = {
       cards: [],
@@ -549,9 +627,11 @@ function App() {
 
     let bestTotalScore = -Infinity;
 
-    for (const rentalCard of rentalResults) {
+    const limitedRentalResults = rentalResults.slice(0, 12);
+
+    for (const rentalResult of limitedRentalResults) {
       const remainingPattern = { ...pattern };
-      const rentalType = rentalCard.card.param_type;
+      const rentalType = rentalResult.card.param_type;
 
       remainingPattern[rentalType] =
         (remainingPattern[rentalType] ?? 0) - 1;
@@ -560,28 +640,41 @@ function App() {
         continue;
       }
 
-      const rentalSpCount = hasValidSpRateUp(rentalCard.card, type) ? 1 : 0;
-
       const ownCandidates = ownedResults.filter(
-        (ownedCard) => ownedCard.card.card_id !== rentalCard.card.card_id
+        (ownedResult) =>
+          ownedResult.card.card_id !== rentalResult.card.card_id
       );
+
+      const rentalSpCount = hasValidSpRateUp(rentalResult.card, trend) ? 1 : 0;
 
       const availableSpCount =
         ownCandidates.filter((result) =>
-          hasValidSpRateUp(result.card, type)
+          hasValidSpRateUp(result.card, trend)
         ).length + rentalSpCount;
 
       if (availableSpCount < minSpCards) {
         continue;
       }
 
-      const result = findBestOwnedCardsByPattern(
-        ownCandidates,
-        remainingPattern,
+      const rentalDaSpCount = isDaSpCard(rentalResult) ? 1 : 0;
+
+      const availableDaSpCount =
+        ownCandidates.filter(isDaSpCard).length + rentalDaSpCount;
+
+      if (availableDaSpCount < minDaSpCards) {
+        continue;
+      }
+
+      const result = findBestOwnedCardsByPattern({
+        ownedResults: ownCandidates,
+        rentalResult,
+        pattern: remainingPattern,
         minSpCards,
-        type,
-        rentalCard
-      );
+        minDaSpCards,
+        trend,
+        abilityDb,
+        calculationContext,
+      });
 
       if (!result) continue;
 
@@ -602,6 +695,7 @@ function App() {
 
       if (result.totalScore > bestTotalScore) {
         bestTotalScore = result.totalScore;
+
         bestResult = {
           cards: sortedCards,
           baseScore: result.baseScore,
@@ -615,51 +709,20 @@ function App() {
     return bestResult;
   }
 
-  function selectRecommendedCards(results, minSpCards) {
-    let selected = results.slice(0, 6);
-
-    let spCount = selected.filter((result) => hasSpRateUp(result.card)).length;
-
-    if (spCount >= minSpCards) {
-      return selected;
-    }
-
-    const outsideSpCards = results.filter((result) => {
-      const alreadySelected = selected.some(
-        (selectedResult) => selectedResult.card.card_id === result.card.card_id
-      );
-
-      return !alreadySelected && hasSpRateUp(result.card);
-    });
-
-    for (const spCard of outsideSpCards) {
-      if (spCount >= minSpCards) break;
-
-      const replaceIndex = [...selected]
-        .map((result, index) => ({ result, index }))
-        .filter(({ result }) => !hasSpRateUp(result.card))
-        .sort((a, b) => a.result.score - b.result.score)[0]?.index;
-
-      if (replaceIndex === undefined) break;
-
-      selected[replaceIndex] = spCard;
-      spCount += 1;
-    }
-
-    return selected.sort((a, b) => b.score - a.score);
-  }
-
   const recommendedPatternResults = useMemo(() => {
     if (!showResult) return [];
 
     return Object.keys(PATTERN_COUNTS).map((patternName) => {
-      const result = selectRecommendedCardsWithRentalAndPattern(
-        ownedCardResults,
-        rentalCardResults,
-        calculationMinSpCards,
-        calculationType,
-        patternName
-      );
+      const result = selectRecommendedCardsWithRentalAndPattern({
+        ownedResults: ownedCardResults,
+        rentalResults: rentalCardResults,
+        patternName,
+        minSpCards: calculationMinSpCards,
+        minDaSpCards,
+        trend: calculationType,
+        abilityDb,
+        calculationContext,
+      });
 
       return {
         patternName,
@@ -674,6 +737,7 @@ function App() {
     ownedCardResults,
     rentalCardResults,
     calculationMinSpCards,
+    minDaSpCards,
     calculationType,
     calculationContext,
   ]);
@@ -730,7 +794,7 @@ function App() {
               alt="サポカ計算機"
             />
             <h1 className="mainTitle">サポカ計算機</h1>
-            <span className="version">v1.0.4 - サポカ札(SSR)による加点を反映</span>
+            <span className="version">v1.0.4 - サポカ札(SSR)による加点 / Pアイテム獲得時アビリティの調整</span>
             <p className="appDescription">
               所持サポカからおすすめ上位6枚を自動計算します。
             </p>
@@ -749,19 +813,29 @@ function App() {
 
                 <h2>更新履歴</h2>
 
-                <p><strong>v1.0.0</strong></p>
-                <span className="versionDate"> - 2026/04/29</span>
+                <p><strong>v1.0.4</strong></p>
+                <span className="versionDate"> - 2026/05/07</span>
+                <p className="changelogNote">サイトに以下の機能を追加しました。：</p>
                 <ul>
-                  <li>React Web版として公開</li>
+                  <li>「初レジェンド - 強化月間（アノマリー）」の理論値踏みに仮対応しました</li>
+                  <li>SSRサポカ札による「SSR札獲得」アビリティの追加発動を考慮して、</li>
+                  <p>おすすめ編成を計算・反映するようにしました</p>
+                  <li>SSRサポカ札のシナジーへの対応に伴い、計算条件のSSR獲得枚数を調整しました</li>
+                  <li>Pアイテムを持ったサポカにによる「Pアイテム獲得時」アビリティの発動回数を考慮して、</li>
+                  <p>おすすめ編成を計算・反映するようにしました</p>
+                  <li>Pアイテム獲得のシナジーへの対応に伴い、計算条件のPアイテム獲得数を調整しました</li>
                 </ul>
-
-                <p><strong>v1.0.1</strong></p>
-                <span className="versionDate"> - 2026/04/29</span>
                 <p className="changelogNote">以下の問題への対応・修正を行いました。：</p>
                 <ul>
-                  <li>傾向外のSP枚数もカウントされていた</li>
-                  <li>"SP時に20枚以上~"アビリティが反映されていなかった</li>
-                  <li>SP枚数の条件を変更しても反映されないことがあった</li>
+                  <li>SP率表示の項目でサポカの凸状況が正しく反映されていなかった</li>
+                  <li>特定の設定でサポカ編成の計算・反映が遅かった</li>
+                </ul>
+
+                <p><strong>v1.0.3</strong></p>
+                <span className="versionDate"> - 2026/05/06</span>
+                <p className="changelogNote">サイトに以下の要素を追加しました。：</p>
+                <ul>
+                  <li>「対応状況」（いただいた不具合報告や意見・要望への回答）</li>
                 </ul>
 
                 <p><strong>v1.0.2</strong></p>
@@ -773,25 +847,19 @@ function App() {
                   <li>ロジックのM強化回数が想定より低くなっていた</li>
                 </ul>
 
-                <p><strong>v1.0.3</strong></p>
-                <span className="versionDate"> - 2026/05/06</span>
-                <p className="changelogNote">サイトに以下の要素を追加しました。：</p>
-                <ul>
-                  <li>「対応状況」（いただいた不具合報告や意見・要望への回答）</li>
-                </ul>
-
-                <p><strong>v1.0.4</strong></p>
-                <span className="versionDate"> - 2026/05/07</span>
-                <p className="changelogNote">サイトに以下の機能を追加しました。：</p>
-                <ul>
-                  <li>SSRサポカ札による「SSR札獲得」アビリティの追加発動分を、</li>
-                  <p>おすすめ編成の計算に反映しました</p>
-                  <li>SSRサポカ札のシナジーへの対応に伴い、計算条件のSSR獲得枚数を調整しました</li>
-                  <li>「初レジェンド - 強化月間（アノマリー）」の理論値踏みに仮対応しました</li>
-                </ul>
+                <p><strong>v1.0.1</strong></p>
+                <span className="versionDate"> - 2026/04/29</span>
                 <p className="changelogNote">以下の問題への対応・修正を行いました。：</p>
                 <ul>
-                  <li>SP率表示の項目でサポカの凸状況が正しく反映されていなかった</li>
+                  <li>傾向外のSP枚数もカウントされていた</li>
+                  <li>"SP時に20枚以上~"アビリティが反映されていなかった</li>
+                  <li>SP枚数の条件を変更しても反映されないことがあった</li>
+                </ul>
+
+                <p><strong>v1.0.0</strong></p>
+                <span className="versionDate"> - 2026/04/29</span>
+                <ul>
+                  <li>React Web版として公開</li>
                 </ul>
               </div>
             </div>
@@ -812,15 +880,6 @@ function App() {
                 </p>
 
                 <ul className="statusList">
-                  <li>
-                    <p className="statusTitle">更新の際に毎回csvファイルを変えないでほしい</p>
-                    <div className="statusBody">
-                      <p>現状はHIF編以降もこのサイトで運営しようと考えているため、</p>
-                      <p>これ以上、急にcsvファイルの中身や様式が変わることはありません。</p>
-                      <p>稼働初期に何度もcsvファイルを作り直してしまい、申し訳ございません。</p>
-                      <span className="versionDate"> - 2026/05/06</span>
-                    </div>
-                  </li>
 
                   <li>
                     <p className="statusTitle">
@@ -830,9 +889,19 @@ function App() {
                       <p>このご意見を受けて、SSRサポカ札獲得のシナジーによる加点を反映するようにしました。</p>
                       <p>「あなたとふたり、電車で」や「あたしの勝ち、ですね～！」等、</p>
                       <p>サポカ札を持つサポカの点数が全体的に底上げされています。</p>
-                      <p>今後は、Pアイテム「カタメコイメ」等の複雑な挙動をするサポカも同様に</p>
+                      <p>今後は、Pアイテムの「カタメコイメ」等、複雑な挙動をするサポカも同様に</p>
                       <p>計算ロジックに組み込めるよう進めてまいります。</p>
                       <span className="versionDate"> - 2026/05/07（追記）</span>
+                    </div>
+                  </li>
+
+                  <li>
+                    <p className="statusTitle">更新の際に毎回csvファイルを変えないでほしい</p>
+                    <div className="statusBody">
+                      <p>現状はHIF編以降もこのサイトで運営しようと考えているため、</p>
+                      <p>これ以上、急にcsvファイルの中身や様式が変わることはありません。</p>
+                      <p>稼働初期に何度もcsvファイルを作り直してしまい、申し訳ございません。</p>
+                      <span className="versionDate"> - 2026/05/06</span>
                     </div>
                   </li>
                 </ul>
@@ -983,6 +1052,22 @@ function App() {
             </select>
           </label>
 
+          {shouldShowSpTypePriority && (
+            <>
+              <label>
+                SPタイプ優先
+              </label>
+              <select
+                className="selectBox"
+                value={spTypePriority}
+                onChange={(e) => setSpTypePriority(e.target.value)}
+              >
+                <option value="none">指定なし</option>
+                <option value="da2">DaSPを2枚以上</option>
+              </select>
+            </>
+          )}
+
           <button
             className="primaryButton"
             onClick={() => {
@@ -992,6 +1077,7 @@ function App() {
                 plan,
                 type,
                 minSpCards,
+                spTypePriority,
               });
               setShowResult(true);
             }}

@@ -160,51 +160,104 @@ export function calcDeckSynergyScore(deckResults, abilityDb, context) {
     result.card.synergy_tags?.includes("ssr_gain")
   );
 
+  const pItemGainCards = deckResults.filter((result) =>
+    result.card.synergy_tags?.includes("p_item_gain")
+  );
+
   const ssrGainCount = ssrGainCards.length;
+  const pItemGainCount = pItemGainCards.length;
 
-  if (ssrGainCount === 0) {
-    return {
-      totalScore: 0,
-      bonusByCardId: {},
-    };
-  }
-
+  const bonusByCardId = {};
   let totalSynergyScore = 0;
 
-  for (const result of deckResults) {
-    const card = result.card;
-    const limitBreak = result.limitBreak ?? 0;
-    const tier = (card.ability_tier || card.rarity || "").trim();
+  // SSRサポカ札シナジー
+  if (ssrGainCount > 0) {
+    let ssrSynergyScore = 0;
 
-    for (const [abilityIndex, abilityId] of card.abilities.entries()) {
-      const ability = abilityDb[`${abilityId}__${tier}`];
+    for (const result of deckResults) {
+      const card = result.card;
+      const limitBreak = result.limitBreak ?? 0;
+      const tier = (card.ability_tier || card.rarity || "").trim();
 
-      if (!ability) continue;
-      if (ability.kind !== "get_ssr") continue;
+      if (!Array.isArray(card.abilities)) continue;
 
-      const idx = getAbilityGradeIndex(limitBreak, abilityIndex);
-      const value = ability.values[idx];
+      for (const [abilityIndex, abilityId] of card.abilities.entries()) {
+        const ability = abilityDb[`${abilityId}__${tier}`];
 
-      const baseCount = context?.get_ssr_count ?? 0;
+        if (!ability) continue;
+        if (ability.kind !== "get_ssr") continue;
 
-      let additionalCount = ssrGainCount;
+        const idx = getAbilityGradeIndex(limitBreak, abilityIndex);
+        const value = Number(ability.values[idx] ?? 0);
 
-      if (ability.limit_count >= 0) {
-        additionalCount = Math.max(
-          0,
-          Math.min(ssrGainCount, ability.limit_count - baseCount)
-        );
+        const baseCount = context?.get_ssr_count ?? 0;
+
+        let additionalCount = ssrGainCount;
+
+        if (ability.limit_count >= 0) {
+          additionalCount = Math.max(
+            0,
+            Math.min(ssrGainCount, ability.limit_count - baseCount)
+          );
+        }
+
+        ssrSynergyScore += value * additionalCount;
       }
+    }
 
-      totalSynergyScore += value * additionalCount;
+    totalSynergyScore += ssrSynergyScore;
+
+    const bonusPerSsrGainCard = ssrSynergyScore / ssrGainCount;
+
+    for (const result of ssrGainCards) {
+      bonusByCardId[result.card.card_id] =
+        (bonusByCardId[result.card.card_id] ?? 0) + bonusPerSsrGainCard;
     }
   }
 
-  const bonusByCardId = {};
-  const bonusPerSsrGainCard = totalSynergyScore / ssrGainCount;
+  // Pアイテム獲得シナジー
+  if (pItemGainCount > 0) {
+    let pItemSynergyScore = 0;
 
-  for (const result of ssrGainCards) {
-    bonusByCardId[result.card.card_id] = bonusPerSsrGainCard;
+    for (const result of deckResults) {
+      const card = result.card;
+      const limitBreak = result.limitBreak ?? 0;
+      const tier = (card.ability_tier || card.rarity || "").trim();
+
+      if (!Array.isArray(card.abilities)) continue;
+
+      for (const [abilityIndex, abilityId] of card.abilities.entries()) {
+        const ability = abilityDb[`${abilityId}__${tier}`];
+
+        if (!ability) continue;
+        if (abilityId !== "get_item_id") continue;
+
+        const idx = getAbilityGradeIndex(limitBreak, abilityIndex);
+        const value = Number(ability.values[idx] ?? 0);
+
+        const baseCount = context?.get_item_count ?? 0;
+
+        let additionalCount = pItemGainCount;
+
+        if (ability.limit_count >= 0) {
+          additionalCount = Math.max(
+            0,
+            Math.min(pItemGainCount, ability.limit_count - baseCount)
+          );
+        }
+
+        pItemSynergyScore += value * additionalCount;
+      }
+    }
+
+    totalSynergyScore += pItemSynergyScore;
+
+    const bonusPerPItemGainCard = pItemSynergyScore / pItemGainCount;
+
+    for (const result of pItemGainCards) {
+      bonusByCardId[result.card.card_id] =
+        (bonusByCardId[result.card.card_id] ?? 0) + bonusPerPItemGainCard;
+    }
   }
 
   return {

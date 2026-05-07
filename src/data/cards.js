@@ -41,7 +41,9 @@ export const cards = [
       "on_param_event_ssr_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_003",
@@ -62,7 +64,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_004",
@@ -83,7 +87,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_005",
@@ -127,7 +133,9 @@ export const cards = [
       "on_param_event_id",
       "get_focus_da70_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_007",
@@ -171,7 +179,9 @@ export const cards = [
       "on_param_event_ssr_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_009",
@@ -238,7 +248,9 @@ export const cards = [
       "on_param_event_ssr_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_012",
@@ -282,7 +294,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_014",
@@ -303,7 +317,9 @@ export const cards = [
       "on_param_event_id",
       "get_all_out_da60_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_015",
@@ -324,7 +340,9 @@ export const cards = [
       "on_param_event_ssr_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_016",
@@ -368,7 +386,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_018",
@@ -481,7 +501,9 @@ export const cards = [
       "on_param_event_id",
       "on_special_training_vo30_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_023",
@@ -525,7 +547,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_025",
@@ -546,7 +570,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_026",
@@ -567,7 +593,9 @@ export const cards = [
       "on_param_event_id",
       "get_motivation_vo60_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_027",
@@ -588,7 +616,9 @@ export const cards = [
       "on_param_event_id",
       "get_focus_da60_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_028",
@@ -655,7 +685,9 @@ export const cards = [
       "on_param_event_ssr_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_031",
@@ -676,7 +708,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_032",
@@ -697,7 +731,9 @@ export const cards = [
       "on_param_event_ssr_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_033",
@@ -718,7 +754,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_034",
@@ -739,7 +777,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_035",
@@ -760,7 +800,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_036",
@@ -781,7 +823,9 @@ export const cards = [
       "on_param_event_ssr_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_037",
@@ -802,7 +846,9 @@ export const cards = [
       "on_param_event_ssr_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_038",
@@ -823,7 +869,9 @@ export const cards = [
       "on_param_event_ssr_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_039",
@@ -844,7 +892,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_040",
@@ -865,7 +915,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_041",
@@ -886,7 +938,9 @@ export const cards = [
       "on_param_event_ssr_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_042",
@@ -907,7 +961,9 @@ export const cards = [
       "on_param_event_id",
       "on_class_da30_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_043",
@@ -928,7 +984,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_044",
@@ -995,7 +1053,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_047",
@@ -1016,7 +1076,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_048",
@@ -1037,7 +1099,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_049",
@@ -1058,7 +1122,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_050",
@@ -1079,7 +1145,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_051",
@@ -1123,7 +1191,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_053",
@@ -1144,7 +1214,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_054",
@@ -1188,7 +1260,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_056",
@@ -1209,7 +1283,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_057",
@@ -1276,7 +1352,9 @@ export const cards = [
       "on_param_event_ssr_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_060",
@@ -1343,7 +1421,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_063",
@@ -1364,7 +1444,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_064",
@@ -1385,7 +1467,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_065",
@@ -1406,7 +1490,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_066",
@@ -1427,7 +1513,9 @@ export const cards = [
       "on_param_event_ssr_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_067",
@@ -1448,7 +1536,9 @@ export const cards = [
       "on_param_event_id",
       "on_class_vi22_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_068",
@@ -1492,7 +1582,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_070",
@@ -1513,7 +1605,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_071",
@@ -1557,7 +1651,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_073",
@@ -1601,7 +1697,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_075",
@@ -1645,7 +1743,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_077",
@@ -1689,7 +1789,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_079",
@@ -1733,7 +1835,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_081",
@@ -1777,7 +1881,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_083",
@@ -1798,7 +1904,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_084",
@@ -1865,7 +1973,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_087",
@@ -1955,7 +2065,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_091",
@@ -1976,7 +2088,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_092",
@@ -1997,7 +2111,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_093",
@@ -2064,7 +2180,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_096",
@@ -2085,7 +2203,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_097",
@@ -2106,7 +2226,9 @@ export const cards = [
       "on_param_event_id",
       "get_reserve_vi15_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_098",
@@ -2127,7 +2249,9 @@ export const cards = [
       "on_param_event_id",
       "on_consult_vo30_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_099",
@@ -2148,7 +2272,9 @@ export const cards = [
       "on_param_event_id",
       "get_reserve_vo30_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_100",
@@ -2169,7 +2295,9 @@ export const cards = [
       "on_param_event_id",
       "get_reserve_da40_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_101",
@@ -2190,7 +2318,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_102",
@@ -2211,7 +2341,9 @@ export const cards = [
       "on_param_event_id",
       "on_sp_vo_vo40_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_103",
@@ -2232,7 +2364,9 @@ export const cards = [
       "on_param_event_id",
       "on_special_training_vo30_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_104",
@@ -2253,7 +2387,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_105",
@@ -2274,7 +2410,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_106",
@@ -2295,7 +2433,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_107",
@@ -2316,7 +2456,9 @@ export const cards = [
       "on_param_event_id",
       "none_id"
     ],
-    "synergy_tags": []
+    "synergy_tags": [
+      "p_item_gain"
+    ]
   },
   {
     "card_id": "card_108",
