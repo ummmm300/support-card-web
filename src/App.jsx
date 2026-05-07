@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import "./App.css";
-import { calcCardScore } from "./lib/calc";
+import { calcCardScore, calcDeckSynergyScore } from "./lib/calc";
 import { abilityDb } from "./data/abilityDb";
 import { cards } from "./data/cards";
 import { contextPresets } from "./data/contextPresets";
@@ -69,6 +69,7 @@ const PATTERN_COUNTS = {
   "2/3/1": [2, 3, 1],
   "2/2/2": [2, 2, 2],
 };
+
 const NEW_CARD_ID = "card_108"; // あなたとふたり、電車で
 
 function App() {
@@ -291,7 +292,13 @@ function App() {
     return result;
   }
 
-  function findBestOwnedCardsByPattern(ownedResults, pattern, minSpCards) {
+  function findBestOwnedCardsByPattern(
+    ownedResults,
+    pattern,
+    minSpCards,
+    type,
+    rentalCard
+  ) {
     const groups = Object.fromEntries(
       TYPE_ORDER.map((cardType) => [
         cardType,
@@ -303,13 +310,14 @@ function App() {
       combinations(groups[cardType], pattern[cardType] ?? 0)
     );
 
-    let bestTeam = null;
-    let bestScore = -Infinity;
+    let bestResult = null;
+    let bestTotalScore = -Infinity;
 
     for (const voGroup of choices[0]) {
       for (const daGroup of choices[1]) {
         for (const viGroup of choices[2]) {
-          const team = [...voGroup, ...daGroup, ...viGroup];
+          const ownTeam = [...voGroup, ...daGroup, ...viGroup];
+          const team = rentalCard ? [...ownTeam, rentalCard] : ownTeam;
 
           const spCount = team.filter((result) =>
             hasValidSpRateUp(result.card, type)
@@ -317,17 +325,29 @@ function App() {
 
           if (spCount < minSpCards) continue;
 
-          const score = team.reduce((sum, result) => sum + result.score, 0);
+          const baseScore = team.reduce((sum, result) => sum + result.score, 0);
+          const synergyScore = calcDeckSynergyScore(
+            team,
+            abilityDb,
+            calculationContext
+          );
+          const totalScore = baseScore + synergyScore;
 
-          if (score > bestScore) {
-            bestScore = score;
-            bestTeam = team;
+          if (totalScore > bestTotalScore) {
+            bestTotalScore = totalScore;
+            bestResult = {
+              ownTeam,
+              team,
+              baseScore,
+              synergyScore,
+              totalScore,
+            };
           }
         }
       }
     }
 
-    return bestTeam;
+    return bestResult;
   }
 
   const ownedCardResults = useMemo(() => {
@@ -458,8 +478,14 @@ function App() {
   ) {
     const pattern = makeTypePattern(type, patternName);
 
-    let bestTeam = [];
-    let bestScore = -Infinity;
+    let bestResult = {
+      cards: [],
+      baseScore: 0,
+      synergyScore: 0,
+      totalScore: 0,
+    };
+
+    let bestTotalScore = -Infinity;
 
     for (const rentalCard of rentalResults) {
       const remainingPattern = { ...pattern };
@@ -472,7 +498,7 @@ function App() {
         continue;
       }
 
-      const rentalSpCount = hasSpRateUp(rentalCard.card) ? 1 : 0;
+      const rentalSpCount = hasValidSpRateUp(rentalCard.card, type) ? 1 : 0;
 
       const ownCandidates = ownedResults.filter(
         (ownedCard) => ownedCard.card.card_id !== rentalCard.card.card_id
@@ -487,32 +513,30 @@ function App() {
         continue;
       }
 
-      const ownTeam = findBestOwnedCardsByPattern(
+      const result = findBestOwnedCardsByPattern(
         ownCandidates,
         remainingPattern,
-        Math.max(0, minSpCards - rentalSpCount),
-        type
+        minSpCards,
+        type,
+        rentalCard
       );
 
-      if (!ownTeam) continue;
+      if (!result) continue;
 
-      const team = [...ownTeam, rentalCard];
+      const sortedCards = result.team.sort((a, b) => b.score - a.score);
 
-      const totalSpCount = team.filter((result) =>
-        hasValidSpRateUp(result.card, type)
-      ).length;
-
-      if (totalSpCount < minSpCards) continue;
-
-      const totalScore = team.reduce((sum, result) => sum + result.score, 0);
-
-      if (totalScore > bestScore) {
-        bestScore = totalScore;
-        bestTeam = team;
+      if (result.totalScore > bestTotalScore) {
+        bestTotalScore = result.totalScore;
+        bestResult = {
+          cards: sortedCards,
+          baseScore: result.baseScore,
+          synergyScore: result.synergyScore,
+          totalScore: result.totalScore,
+        };
       }
     }
 
-    return bestTeam.sort((a, b) => b.score - a.score);
+    return bestResult;
   }
 
   function selectRecommendedCards(results, minSpCards) {
@@ -553,7 +577,7 @@ function App() {
     if (!showResult) return [];
 
     return Object.keys(PATTERN_COUNTS).map((patternName) => {
-      const cards = selectRecommendedCardsWithRentalAndPattern(
+      const result = selectRecommendedCardsWithRentalAndPattern(
         ownedCardResults,
         rentalCardResults,
         calculationMinSpCards,
@@ -561,14 +585,12 @@ function App() {
         patternName
       );
 
-      const totalScore = cards.reduce((sum, result) => {
-        return sum + result.score;
-      }, 0);
-
       return {
         patternName,
-        cards,
-        totalScore,
+        cards: result.cards,
+        baseScore: result.baseScore,
+        synergyScore: result.synergyScore,
+        totalScore: result.totalScore,
       };
     });
   }, [
@@ -577,6 +599,7 @@ function App() {
     rentalCardResults,
     calculationMinSpCards,
     calculationType,
+    calculationContext,
   ]);
 
   const filteredOwnedCards = cards.filter((card) => {

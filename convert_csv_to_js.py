@@ -1,5 +1,6 @@
 import csv
 import os
+import json
 
 BASE_DIR = os.path.dirname(__file__)
 
@@ -20,6 +21,18 @@ def parse_int(x):
     if x is None or x == "":
         return 0
     return int(x)
+
+
+def parse_tags(x):
+    if x is None:
+        return []
+
+    raw = str(x).strip()
+
+    if raw == "":
+        return []
+
+    return [tag.strip() for tag in raw.split("|") if tag.strip()]
 
 
 def convert_ability_db():
@@ -51,7 +64,7 @@ def convert_ability_db():
 
     with open(ABILITY_JS, "w", encoding="utf-8") as f:
         f.write("export const abilityDb = ")
-        f.write(str(result).replace("'", '"'))
+        f.write(json.dumps(result, ensure_ascii=False, indent=2))
         f.write(";\n")
 
     print("abilityDb.js 生成完了")
@@ -85,15 +98,15 @@ def convert_card_db():
                 "logic": parse_int(row.get("logic", 0)),
                 "anomaly": parse_int(row.get("anomaly", 0)),
 
-
                 "rental_candidate": parse_int(row.get("rental_candidate", 0)),
 
                 "abilities": abilities,
+                "synergy_tags": parse_tags(row.get("synergy_tags", "")),
             })
 
     with open(CARD_JS, "w", encoding="utf-8") as f:
         f.write("export const cards = ")
-        f.write(str(result).replace("'", '"'))
+        f.write(json.dumps(result, ensure_ascii=False, indent=2))
         f.write(";\n")
 
     print("cards.js 生成完了")

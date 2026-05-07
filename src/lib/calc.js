@@ -127,11 +127,7 @@ export function calcAbilityScore(kind, value, context, limitCount) {
   }
 
   return value * count;
-
-  console.log(card.name, "limitBreak:", limitBreak);
 }
-
-
 
 export function calcCardScore(card, abilityDb, context, limitBreak = 0) {
   const tier = (card.ability_tier || card.rarity || "").trim();
@@ -153,23 +149,51 @@ export function calcCardScore(card, abilityDb, context, limitBreak = 0) {
       ability.limit_count
     );
 
-    if (card.name === "一番星と王子様") {
-      console.log({
-        cardName: card.name,
-        limitBreak,
-        abilityIndex,
-        abilityId,
-        tier,
-        gradeIndex: idx,
-        gradeLabel: ["I", "II", "III", "IV", "V"][idx],
-        kind: ability.kind,
-        value,
-        limit_count: ability.limit_count,
-        score,
-      });
-    }
-
     total += score;
   }
+
   return total;
+}
+
+export function calcDeckSynergyScore(deckResults, abilityDb, context) {
+  const ssrGainCount = deckResults.filter((result) =>
+    result.card.synergy_tags?.includes("ssr_gain")
+  ).length;
+
+  if (ssrGainCount === 0) {
+    return 0;
+  }
+
+  let synergyScore = 0;
+
+  for (const result of deckResults) {
+    const card = result.card;
+    const limitBreak = result.limitBreak ?? 0;
+    const tier = (card.ability_tier || card.rarity || "").trim();
+
+    for (const [abilityIndex, abilityId] of card.abilities.entries()) {
+      const ability = abilityDb[`${abilityId}__${tier}`];
+
+      if (!ability) continue;
+      if (ability.kind !== "get_ssr") continue;
+
+      const idx = getAbilityGradeIndex(limitBreak, abilityIndex);
+      const value = ability.values[idx];
+
+      const baseCount = context?.get_ssr_count ?? 0;
+
+      let additionalCount = ssrGainCount;
+
+      if (ability.limit_count >= 0) {
+        additionalCount = Math.max(
+          0,
+          Math.min(ssrGainCount, ability.limit_count - baseCount)
+        );
+      }
+
+      synergyScore += value * additionalCount;
+    }
+  }
+
+  return synergyScore;
 }
