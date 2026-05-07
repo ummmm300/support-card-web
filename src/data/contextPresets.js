@@ -929,7 +929,7 @@ export const contextPresets = {
                             get_impression_count: 0,
                             get_reserve_count: 12,
                             get_all_out_count: 1,
-                            get_ssr_count: 16,
+                            get_ssr_count: 17,
                             class_count: 4,
                             supply_count: 4,
                             consult_count: 2,
@@ -940,7 +940,7 @@ export const contextPresets = {
                             get_drink_count: 23,
                             drink_exchange_count: 12,
                             customize_count: 6,
-                            get_item_count: 6,
+                            get_item_count: 5,
                             param_event_count: 1,
                             param_event_ssr_count: 1,
                         },
@@ -949,4 +949,4 @@ export const contextPresets = {
             },
         },
     },
-  */}
+ */}
