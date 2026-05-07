@@ -872,3 +872,56 @@ body.darkModeBody #root {
     border-radius: 8px;
   }
 }
+
+.usageModal {
+  line-height: 1.7;
+}
+
+.usageModal h3 {
+  margin-top: 1.6rem;
+  margin-bottom: 0.6rem;
+  line-height: 1.5;
+}
+
+.usageModal h3:first-of-type {
+  margin-top: 1rem;
+}
+
+.usageModal p {
+  margin: 0 0 0.7rem 0;
+  line-height: 1.7;
+}
+
+.usageModal p + p {
+  margin-top: 0;
+}
+
+.usageModal .usageTextBlock {
+  margin-bottom: 1.2rem;
+}
+
+.usageModal .subText {
+  margin-top: -0.2rem;
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+
+.usageModal .divider {
+  margin: 1.5rem 0;
+}
+
+@media (max-width: 600px) {
+  .usageModal h3 {
+    margin-top: 1.4rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .usageModal p {
+    margin-bottom: 0.6rem;
+    line-height: 1.65;
+  }
+
+  .usageModal .usageTextBlock {
+    margin-bottom: 1rem;
+  }
+}

@@ -794,7 +794,7 @@ function App() {
               alt="サポカ計算機"
             />
             <h1 className="mainTitle">サポカ計算機</h1>
-            <span className="version">v1.0.4 - サポカ札(SSR)による加点 / Pアイテム獲得時アビリティの調整</span>
+            <span className="version">v1.0.4 - サポカ札/Pアイテムシナジー対応・使い方更新</span>
             <p className="appDescription">
               所持サポカからおすすめ上位6枚を自動計算します。
             </p>
@@ -815,20 +815,23 @@ function App() {
 
                 <p><strong>v1.0.4</strong></p>
                 <span className="versionDate"> - 2026/05/07</span>
-                <p className="changelogNote">サイトに以下の機能を追加しました。：</p>
+                <p className="changelogNote">サイトに以下の機能を追加しました：</p>
                 <ul>
                   <li>「初レジェンド - 強化月間（アノマリー）」の理論値踏みに仮対応しました</li>
                   <li>SSRサポカ札による「SSR札獲得」アビリティの追加発動を考慮して、</li>
                   <p>おすすめ編成を計算・反映するようにしました</p>
                   <li>SSRサポカ札のシナジーへの対応に伴い、計算条件のSSR獲得枚数を調整しました</li>
-                  <li>Pアイテムを持ったサポカにによる「Pアイテム獲得時」アビリティの発動回数を考慮して、</li>
+                  <li>Pアイテムを獲得するサポカによる「Pアイテム獲得時」アビリティの追加発動を考慮して、</li>
                   <p>おすすめ編成を計算・反映するようにしました</p>
                   <li>Pアイテム獲得のシナジーへの対応に伴い、計算条件のPアイテム獲得数を調整しました</li>
                 </ul>
-                <p className="changelogNote">以下の問題への対応・修正を行いました。：</p>
+
+
+                <p className="changelogNote">以下の表示・動作を改善しました：</p>
                 <ul>
-                  <li>SP率表示の項目でサポカの凸状況が正しく反映されていなかった</li>
-                  <li>特定の設定でサポカ編成の計算・反映が遅かった</li>
+                  <li>SP率表示が、サポカの凸状況を正しく反映するようにしました</li>
+                  <li>特定の設定で、おすすめ編成の計算・表示が重くなるケースを軽減しました</li>
+                  <li>おすすめ編成の選出ロジックが分かりやすくなるよう、「使い方」の説明を更新しました</li>
                 </ul>
 
                 <p><strong>v1.0.3</strong></p>
@@ -915,7 +918,7 @@ function App() {
 
           {showHelp && (
             <div className="modalOverlay" onClick={() => setShowHelp(false)}>
-              <div className="helpModal" onClick={(e) => e.stopPropagation()}>
+              <div className="helpModal usageModal" onClick={(e) => e.stopPropagation()}>
                 <button className="modalCloseButton" onClick={() => setShowHelp(false)}>
                   ×
                 </button>
@@ -923,24 +926,40 @@ function App() {
                 <h2>使い方</h2>
 
                 <h3>1. 条件を選ぶ ⚙️ </h3>
-                <p>
-                  モード・プラン・傾向・<br className="spOnly" />
-                  SP率サポカの最低枚数を選択してください。
-                </p>
+                <div className="usageTextBlock">
+                  <p>
+                    モード・プラン・傾向・<br className="spOnly" />
+                    SP率サポカの最低枚数を選択してください。
+                  </p>
+                </div>
+
 
                 <h3>2. 所持サポカを登録する ✅</h3>
-                <p>所持しているサポカにチェックを入れ、<br className="spOnly" />凸数を選択してください。</p>
-                <p className="subText">入力したサポカの情報は、端末ごとに自動保存されます。</p>
+                <div className="usageTextBlock">
+                  <p>所持しているサポカにチェックを入れ、<br className="spOnly" />凸数を選択してください。</p>
+                  <p className="subText">入力したサポカの情報は、端末ごとに自動保存されます。</p>
+                </div>
 
-                <h3>3. おすすめ編成を見る 👀</h3>
-                <p>所持サポカ5枚＋レンタル1枚の条件で、</p>
-                <p>各パターンで最も点数が高くなった編成を自動表示します。</p>
-
+                <h3>4. おすすめ編成の選出について 🧮</h3>
+                <div className="usageTextBlock">
+                  <p>
+                    おすすめ編成は、サポカ単体の点数順ではなく、編成全体の合計点が高くなるように選出しています。
+                  </p>
+                  <p>
+                    SSRサポカ札やPアイテム獲得によって他サポカのアビリティを追加発動させる場合、
+                    おすすめ編成では「追加発動させた側」のサポカの点数を上昇して表示させています。
+                  </p>
+                  <p>
+                    そのため、単体点が低く表示されるサポカであっても、編成全体では強いと判断されて選ばれる場合があります。
+                  </p>
+                </div>
                 <hr className="divider" />
 
                 <h3>注意事項 ⚠️</h3>
-                <p>この計算機は簡易計算です。実際の立ち回りによって最適編成が変わる場合があります。</p>
-                <p>SRサポカは一部のみ実装しています。追加までしばらくお待ちください。</p>
+                <div className="usageTextBlock">
+                  <p>この計算機は簡易計算です。実際の立ち回りによって最適編成が変わる場合があります。</p>
+                  <p>SRサポカは一部のみ実装しています。追加までしばらくお待ちください。</p>
+                </div>
               </div>
             </div>
           )}
