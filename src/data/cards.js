@@ -959,7 +959,7 @@ export const cards = [
       "on_convert_id",
       "on_class_id",
       "on_param_event_id",
-      "on_class_da30_id"
+      "on_class_da20_id"
     ],
     "synergy_tags": [
       "p_item_gain"
@@ -1534,7 +1534,7 @@ export const cards = [
       "on_lesson_vi_id",
       "get_active_id",
       "on_param_event_id",
-      "on_class_vi22_id"
+      "none_id"
     ],
     "synergy_tags": [
       "p_item_gain"
@@ -2482,5 +2482,26 @@ export const cards = [
     "synergy_tags": [
       "ssr_gain"
     ]
+  },
+  {
+    "card_id": "card_109",
+    "name": "……騒々しいお祭りね",
+    "rarity": "SSR",
+    "ability_tier": "SSR",
+    "param_type": "Vi",
+    "sp_rate": 0,
+    "sense": 1,
+    "logic": 0,
+    "anomaly": 0,
+    "rental_candidate": 1,
+    "abilities": [
+      "param_bonus_vi_id",
+      "on_exam_end_id",
+      "on_outing_2times_id",
+      "on_sp_vi_id",
+      "on_param_event_id",
+      "none_id"
+    ],
+    "synergy_tags": []
   }
 ];

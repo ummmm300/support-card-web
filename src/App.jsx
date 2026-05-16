@@ -3,7 +3,16 @@ import "./App.css";
 import { calcCardScore, calcDeckSynergyScore, getAbilityGradeIndex } from "./lib/calc";
 import { abilityDb } from "./data/abilityDb";
 import { cards } from "./data/cards";
-import { contextPresets } from "./data/contextPresets";
+import {
+  SPECIAL_ITEM_EFFECTS,
+  GENERAL_EFFECTS,
+} from "./data/specialItemEffects";
+import {
+  contextPresets,
+  HIF_VARIANTS,
+  HIF_EXAM_RATIO_PRESETS,
+  applyHifExamParamsToContext,
+} from "./data/contextPresets";
 
 const CONTEXT_LABELS = {
   param_vo_total: "レッスンで獲得したVoパラメータ",
@@ -72,17 +81,131 @@ const PATTERN_COUNTS = {
   "2/2/2": [2, 2, 2],
 };
 
+function isCardAvailableForPlan(card, plan) {
+  if (!card) return false;
+
+  if (plan === "sense") return Number(card.sense ?? 0) === 1;
+  if (plan === "motivation") return Number(card.logic ?? 0) === 1;
+  if (plan === "impression") return Number(card.logic ?? 0) === 1;
+  if (plan === "anomaly") return Number(card.anomaly ?? 0) === 1;
+
+  return true;
+}
+
+function applySpecialItemEffects(baseContext, effectCounts = {}) {
+  const context = { ...baseContext };
+
+  Object.entries(SPECIAL_ITEM_EFFECTS).forEach(([effectKey, effect]) => {
+    const rawCount = Number(effectCounts?.[effectKey] ?? 0);
+
+    const count = Math.max(
+      0,
+      Math.min(effect.maxCount, Number.isFinite(rawCount) ? rawCount : 0)
+    );
+
+    if (count <= 0) return;
+
+    Object.entries(effect.contextAdds).forEach(([contextKey, valuePerCount]) => {
+      context[contextKey] = (context[contextKey] ?? 0) + valuePerCount * count;
+    });
+  });
+
+  return context;
+}
+
+function createSpecialItemScoreBonusByCardId(effectCounts = {}) {
+  const bonusByCardId = {};
+
+  Object.entries(SPECIAL_ITEM_EFFECTS).forEach(([effectKey, effect]) => {
+    const rawCount = Number(effectCounts?.[effectKey] ?? 0);
+
+    const count = Math.max(
+      0,
+      Math.min(effect.maxCount, Number.isFinite(rawCount) ? rawCount : 0)
+    );
+
+    if (count <= 0) return;
+    if (!effect.scoreAdds) return;
+
+    const bonus = Object.values(effect.scoreAdds).reduce(
+      (sum, valuePerCount) => sum + Number(valuePerCount ?? 0) * count,
+      0
+    );
+
+    const cardId = String(effect.cardId);
+    bonusByCardId[cardId] = (bonusByCardId[cardId] ?? 0) + bonus;
+  });
+
+  return bonusByCardId;
+}
+
+function applyGeneralEffects(baseContext, effectCounts = {}) {
+  const context = { ...baseContext };
+
+  Object.entries(GENERAL_EFFECTS).forEach(([effectKey, effect]) => {
+    const rawCount = Number(effectCounts?.[effectKey] ?? 0);
+
+    const count = Math.max(
+      0,
+      Math.min(effect.maxCount, Number.isFinite(rawCount) ? rawCount : 0)
+    );
+
+    if (count <= 0) return;
+
+    Object.entries(effect.contextAdds).forEach(([contextKey, valuePerCount]) => {
+      context[contextKey] = (context[contextKey] ?? 0) + valuePerCount * count;
+    });
+  });
+
+  return context;
+}
+
+function createDefaultSpecialItemEffectCounts() {
+  return Object.fromEntries(
+    Object.keys(SPECIAL_ITEM_EFFECTS).map((key) => [key, 0])
+  );
+}
+
+function createDefaultGeneralEffectCounts() {
+  return Object.fromEntries(
+    Object.keys(GENERAL_EFFECTS).map((key) => [key, 0])
+  );
+}
+
 const CANDIDATE_LIMIT_PER_TYPE = 7;
 
-const NEW_CARD_ID = "card_108"; // あなたとふたり、電車で
+const BASE_MODE_KEYS = ["hif", "legend"];
+
+const NEW_CARD_IDS = ["card_109", "card_108"];
+
 
 function App() {
 
-  const [mode, setMode] = useState("legend");
+  const [mode, setMode] = useState("hif");
   const [plan, setPlan] = useState("sense");
   const [type, setType] = useState("voda");
   const [minSpCards, setMinSpCards] = useState(0);
   const [spTypePriority, setSpTypePriority] = useState("none");
+  const [isEnhancedMode, setIsEnhancedMode] = useState(false);
+  const [hifVariant, setHifVariant] = useState("standard");
+  const [hifExamRatioPreset, setHifExamRatioPreset] = useState("trendPair");
+
+  const [hifManualExamRatio, setHifManualExamRatio] = useState({
+    vo: 4,
+    da: 4,
+    vi: 1,
+  });
+
+  const [generalEffectCounts, setGeneralEffectCounts] = useState(
+    createDefaultGeneralEffectCounts
+  );
+
+  const [isSpecialItemEffectEnabled, setIsSpecialItemEffectEnabled] =
+    useState(false);
+
+  const [specialItemEffectCounts, setSpecialItemEffectCounts] = useState(
+    createDefaultSpecialItemEffectCounts
+  );
 
   const [calculationSettings, setCalculationSettings] = useState({
     mode: "legend",
@@ -90,23 +213,80 @@ function App() {
     type: "voda",
     minSpCards: 0,
     spTypePriority: "none",
+    isEnhancedMode: false,
+    hifVariant: "standard",
+    hifExamRatioPreset: "trendPair",
+    hifManualExamRatio: {
+      vo: 4,
+      da: 4,
+      vi: 1,
+    },
+    isSpecialItemEffectEnabled: false,
+    specialItemEffectCounts: createDefaultSpecialItemEffectCounts(),
+    generalEffectCounts: createDefaultGeneralEffectCounts(),
   });
 
   const calculationMode = calculationSettings.mode;
   const calculationPlan = calculationSettings.plan;
   const calculationType = calculationSettings.type;
   const calculationMinSpCards = calculationSettings.minSpCards;
+
+  const calculationIsEnhancedMode =
+    calculationSettings?.isEnhancedMode ?? false;
+
+  const calculationEffectiveMode = getEffectiveMode(
+    calculationMode,
+    calculationIsEnhancedMode
+  );
+
   const calculationSpTypePriority =
     calculationSettings?.spTypePriority ?? "none";
   const minDaSpCards =
     calculationSpTypePriority === "da2" ? 2 : 0;
 
-  const calculationContext =
-    contextPresets[calculationMode]
-      .plans[calculationPlan]
-      .types[calculationType]
-      .context;
+  const calculationContext = useMemo(() => {
+    const baseContext =
+      contextPresets[calculationEffectiveMode]
+        .plans[calculationPlan]
+        .types[calculationType]
+        .context;
 
+    if (calculationEffectiveMode !== "hif") {
+      return baseContext;
+    }
+
+    const hifVariant =
+      calculationSettings?.hifVariant ?? "standard";
+
+    const hifExamRatioPreset =
+      calculationSettings?.hifExamRatioPreset ?? "trendPair";
+
+    const hifManualExamRatio =
+      calculationSettings?.hifManualExamRatio ?? {
+        vo: 4,
+        da: 4,
+        vi: 1,
+      };
+
+    const contextWithHifVariant = {
+      ...baseContext,
+      ...(HIF_VARIANTS[hifVariant]?.contextOverrides ?? {}),
+    };
+
+    return applyHifExamParamsToContext({
+      context: contextWithHifVariant,
+      type: calculationType,
+      examRatioPresetKey: hifExamRatioPreset,
+      manualRatio: hifManualExamRatio,
+    });
+  }, [
+    calculationEffectiveMode,
+    calculationPlan,
+    calculationType,
+    calculationSettings?.hifVariant,
+    calculationSettings?.hifExamRatioPreset,
+    calculationSettings?.hifManualExamRatio,
+  ]);
 
   const [showResult, setShowResult] = useState(false);
   const [theme, setTheme] = useState(() => {
@@ -124,9 +304,10 @@ function App() {
   const [showChangelog, setShowChangelog] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [showStatus, setShowStatus] = useState(false);
+  const [isSpecialItemHelpOpen, setIsSpecialItemHelpOpen] = useState(false);
 
   const shouldShowSpTypePriority =
-    mode === "enhancedLegendTheory" && Number(minSpCards) >= 3;
+    isEnhancedMode && Number(minSpCards) >= 3;
 
   useEffect(() => {
     localStorage.setItem("theme", theme);
@@ -167,10 +348,10 @@ function App() {
   const [ownedTypeFilter, setOwnedTypeFilter] = useState("all");
   const [ownedPlanFilter, setOwnedPlanFilter] = useState("all");
 
-
+  const effectiveMode = getEffectiveMode(mode, isEnhancedMode);
 
   const context =
-    contextPresets[mode].plans[plan].types[type].context;
+    contextPresets[effectiveMode].plans[plan].types[type].context;
 
   function updateOwnedCard(cardId, key, value) {
     setOwnedCards((prev) => ({
@@ -190,6 +371,20 @@ function App() {
     if (!ok) return;
 
     setOwnedCards({});
+  }
+
+  function registerAllCardsMaxLimitBreak() {
+    const nextOwnedCards = { ...ownedCards };
+
+    cards.forEach((card) => {
+      nextOwnedCards[card.card_id] = {
+        ...(nextOwnedCards[card.card_id] ?? {}),
+        owned: true,
+        limitBreak: 4,
+      };
+    });
+
+    setOwnedCards(nextOwnedCards);
   }
 
   function downloadOwnedCardsCsv() {
@@ -225,6 +420,7 @@ function App() {
     const reader = new FileReader();
 
     reader.onload = (e) => {
+      F
       const text = e.target.result;
       const lines = text.trim().split(/\r?\n/);
 
@@ -297,6 +493,14 @@ function App() {
 
   function formatScore(score) {
     return Number(score ?? 0).toFixed(1);
+  }
+
+  function getEffectiveMode(baseMode, enhanced) {
+    if (baseMode === "legend" && enhanced) {
+      return "enhancedLegend";
+    }
+
+    return baseMode;
   }
 
   function makeTypePattern(type, patternName) {
@@ -388,13 +592,42 @@ function App() {
     trend,
     abilityDb,
     calculationContext,
+    forcedCardIds = [],
   }) {
+
+    const forcedCardIdSet = new Set(forcedCardIds);
+
+    const forcedResults = ownedResults.filter((result) =>
+      forcedCardIdSet.has(result.card.card_id)
+    );
+
+    if (forcedResults.length !== forcedCardIds.length) {
+      return null;
+    }
+
+    const remainingPattern = { ...pattern };
+
+    for (const forcedResult of forcedResults) {
+      const forcedType = forcedResult.card.param_type;
+
+      remainingPattern[forcedType] = (remainingPattern[forcedType] ?? 0) - 1;
+
+      if (remainingPattern[forcedType] < 0) {
+        return null;
+      }
+    }
+
+    const selectableOwnedResults = ownedResults.filter(
+      (result) => !forcedCardIdSet.has(result.card.card_id)
+    );
 
     const groups = Object.fromEntries(
       TYPE_ORDER.map((cardType) => [
         cardType,
         limitCandidatesByType(
-          ownedResults.filter((result) => result.card.param_type === cardType),
+          selectableOwnedResults.filter(
+            (result) => result.card.param_type === cardType
+          ),
           CANDIDATE_LIMIT_PER_TYPE,
           {
             requireDaSp: minDaSpCards > 0 && cardType === "Da",
@@ -409,7 +642,10 @@ function App() {
     const requiredOwnedDaSpCount = Math.max(0, minDaSpCards - rentalDaSpCount);
 
     const choices = TYPE_ORDER.map((cardType) => {
-      const comboList = combinations(groups[cardType], pattern[cardType] ?? 0);
+      const comboList = combinations(
+        groups[cardType],
+        remainingPattern[cardType] ?? 0
+      );
 
       if (cardType !== "Da" || requiredOwnedDaSpCount <= 0) {
         return comboList;
@@ -427,7 +663,7 @@ function App() {
     for (const voGroup of choices[0]) {
       for (const daGroup of choices[1]) {
         for (const viGroup of choices[2]) {
-          const ownTeam = [...voGroup, ...daGroup, ...viGroup];
+          const ownTeam = [...forcedResults, ...voGroup, ...daGroup, ...viGroup];
           const team = rentalResult ? [...ownTeam, rentalResult] : ownTeam;
 
           const spCardCount = team.filter((result) =>
@@ -471,6 +707,49 @@ function App() {
     }
 
     return bestResult;
+  }
+
+  function createOwnedCardResultsForContext(context, scoreBonusByCardId = {}) {
+    return cards
+      .filter((card) => calculationOwnedCards[card.card_id]?.owned)
+      .filter((card) => isCardAvailableForPlan(card, calculationPlan))
+      .map((card) => {
+        const limitBreak = calculationOwnedCards[card.card_id]?.limitBreak ?? 0;
+
+        const baseScore = calcCardScore(card, abilityDb, context, limitBreak);
+        const specialItemScoreBonus =
+          scoreBonusByCardId[String(card.card_id)] ?? 0;
+
+        const score = baseScore + specialItemScoreBonus;
+
+        return {
+          card,
+          limitBreak,
+          score,
+          baseScore,
+          specialItemScoreBonus,
+          isRental: false,
+        };
+      })
+      .sort((a, b) => b.score - a.score);
+  }
+
+  function createRentalCardResultsForContext(context) {
+    return cards
+      .filter((card) => card.rental_candidate === 1)
+      .filter((card) => isCardAvailableForPlan(card, calculationPlan))
+      .map((card) => {
+        const limitBreak = 4;
+        const score = calcCardScore(card, abilityDb, context, limitBreak);
+
+        return {
+          card,
+          limitBreak,
+          score,
+          isRental: true,
+        };
+      })
+      .sort((a, b) => b.score - a.score);
   }
 
   const ownedCardResults = useMemo(() => {
@@ -530,6 +809,13 @@ function App() {
       })
       .sort((a, b) => b.score - a.score);
   }, [calculationPlan, calculationContext]);
+
+  function getParamTypeClass(paramType) {
+    if (paramType === "Vo") return "paramTypeVo";
+    if (paramType === "Da") return "paramTypeDa";
+    if (paramType === "Vi") return "paramTypeVi";
+    return "";
+  }
 
   const filteredCards = cards.filter((card) => {
     if (plan === "sense") return card.sense === 1;
@@ -614,7 +900,9 @@ function App() {
     trend,
     abilityDb,
     calculationContext,
+    forcedCardIds = [],
   }) {
+
     const pattern = makeTypePattern(trend, patternName);
 
     let bestResult = {
@@ -628,8 +916,12 @@ function App() {
     let bestTotalScore = -Infinity;
 
     const limitedRentalResults = rentalResults.slice(0, 12);
+    const forcedCardIdSet = new Set(forcedCardIds);
 
     for (const rentalResult of limitedRentalResults) {
+      if (forcedCardIdSet.has(rentalResult.card.card_id)) {
+        continue;
+      }
       const remainingPattern = { ...pattern };
       const rentalType = rentalResult.card.param_type;
 
@@ -674,6 +966,7 @@ function App() {
         trend,
         abilityDb,
         calculationContext,
+        forcedCardIds,
       });
 
       if (!result) continue;
@@ -712,34 +1005,122 @@ function App() {
   const recommendedPatternResults = useMemo(() => {
     if (!showResult) return [];
 
-    return Object.keys(PATTERN_COUNTS).map((patternName) => {
-      const result = selectRecommendedCardsWithRentalAndPattern({
+    const calculationSpecialItemEffectCounts =
+      calculationSettings?.specialItemEffectCounts ??
+      createDefaultSpecialItemEffectCounts();
+
+
+    const calculationGeneralEffectCounts =
+      calculationSettings?.generalEffectCounts ??
+      createDefaultGeneralEffectCounts();
+
+    const calculationIsSpecialItemEffectEnabled =
+      calculationSettings?.isSpecialItemEffectEnabled ?? false;
+
+    const activeSpecialItemEffects = Object.entries(SPECIAL_ITEM_EFFECTS).filter(
+      ([effectKey, effect]) => {
+        const count = Number(calculationSpecialItemEffectCounts?.[effectKey] ?? 0);
+        if (count <= 0) return false;
+
+        const effectCard = cards.find(
+          (card) => String(card.card_id) === String(effect.cardId)
+        );
+        if (!effectCard) return false;
+
+        if (!isCardAvailableForPlan(effectCard, calculationPlan)) return false;
+        if (!calculationOwnedCards[effectCard.card_id]?.owned) return false;
+
+        return true;
+      }
+    );
+
+    const hasActiveGeneralEffects = Object.entries(GENERAL_EFFECTS).some(
+      ([effectKey, effect]) => {
+        const count = Number(calculationGeneralEffectCounts?.[effectKey] ?? 0);
+        return count > 0;
+      }
+    );
+
+    const scenarios = [
+      {
+        scenarioKey: "normal",
+        scenarioLabel: "通常編成",
+        context: calculationContext,
         ownedResults: ownedCardResults,
         rentalResults: rentalCardResults,
-        patternName,
-        minSpCards: calculationMinSpCards,
-        minDaSpCards,
-        trend: calculationType,
-        abilityDb,
-        calculationContext,
-      });
+        forcedCardIds: [],
+      },
+    ];
 
-      return {
-        patternName,
-        cards: result.cards,
-        baseScore: result.baseScore,
-        synergyScore: result.synergyScore,
-        totalScore: result.totalScore,
-      };
-    });
+    if (
+      calculationIsSpecialItemEffectEnabled &&
+      (activeSpecialItemEffects.length > 0 || hasActiveGeneralEffects)
+    ) {
+      let adjustedContext = applySpecialItemEffects(
+        calculationContext,
+        calculationSpecialItemEffectCounts
+      );
+
+      adjustedContext = applyGeneralEffects(
+        adjustedContext,
+        calculationGeneralEffectCounts
+      );
+
+      const specialItemScoreBonusByCardId =
+        createSpecialItemScoreBonusByCardId(calculationSpecialItemEffectCounts);
+
+      const adjustedOwnedResults = createOwnedCardResultsForContext(
+        adjustedContext,
+        specialItemScoreBonusByCardId
+      );
+
+      const adjustedRentalResults =
+        createRentalCardResultsForContext(adjustedContext);
+
+      scenarios.push({
+        scenarioKey: "specialItem",
+        scenarioLabel: "Pアイテム補正あり",
+        context: adjustedContext,
+        ownedResults: adjustedOwnedResults,
+        rentalResults: adjustedRentalResults,
+        forcedCardIds: activeSpecialItemEffects.map(
+          ([, effect]) => effect.cardId
+        ),
+      });
+    }
+
+    return scenarios.flatMap((scenario) =>
+      Object.keys(PATTERN_COUNTS).map((patternName) => {
+        const result = selectRecommendedCardsWithRentalAndPattern({
+          ownedResults: scenario.ownedResults,
+          rentalResults: scenario.rentalResults,
+          patternName,
+          minSpCards: calculationMinSpCards,
+          minDaSpCards,
+          trend: calculationType,
+          abilityDb,
+          calculationContext: scenario.context,
+          forcedCardIds: scenario.forcedCardIds,
+        });
+
+        return {
+          scenarioKey: scenario.scenarioKey,
+          scenarioLabel: scenario.scenarioLabel,
+          patternName,
+          cards: result.cards,
+          baseScore: result.baseScore,
+          synergyScore: result.synergyScore,
+          totalScore: result.totalScore,
+        };
+      })
+    );
   }, [
     showResult,
+    calculationOwnedCards,
+    calculationSettings,
+    calculationContext,
     ownedCardResults,
     rentalCardResults,
-    calculationMinSpCards,
-    minDaSpCards,
-    calculationType,
-    calculationContext,
   ]);
 
   const filteredOwnedCards = cards.filter((card) => {
@@ -758,7 +1139,11 @@ function App() {
     return matchesName && matchesType && matchesPlan;
   });
 
+  const sortedRecommendedPatternResults = [...recommendedPatternResults].sort(
+    (a, b) => Number(b.totalScore ?? 0) - Number(a.totalScore ?? 0)
+  );
 
+  const rankEmojis = ["🥇 ", "🥈 ", "🥉 "];
 
   return (
     <main className={`app ${theme === "dark" ? "darkMode" : "lightMode"}`}>
@@ -790,11 +1175,11 @@ function App() {
           <header className="siteHeader">
             <img
               className="headerImage"
-              src="/いつまでも続けばいいのに.png"
+              src="/……騒々しいお祭りね.png"
               alt="サポカ計算機"
             />
             <h1 className="mainTitle">サポカ計算機</h1>
-            <span className="version">v1.0.4 - サポカ札/Pアイテムシナジー対応・使い方更新</span>
+            <span className="version">v1.1.0 - 「HIF」に対応しました</span>
             <p className="appDescription">
               所持サポカからおすすめ上位6枚を自動計算します。
             </p>
@@ -813,6 +1198,29 @@ function App() {
 
                 <h2>更新履歴</h2>
 
+                <p><strong>v1.1.0</strong></p>
+                <span className="versionDate"> - 2026/05/16</span>
+                <p className="changelogNote">サイトに以下の機能を追加しました：</p>
+                <ul>
+                  <li>新モード「HIF」に対応しました</li>
+                  <li>強化月間ON/OFFに対応したモード切り替えUIを追加しました</li>
+                </ul>
+                <p className="subText">
+                  ※HIF編の計算条件は仮設定であり、順次調整する予定です。
+                  <br />
+                  ※HIFの強化月間は未対応のため、ONにしても通常HIFと同じ条件で計算されます。
+                </p>
+
+                <p className="changelogNote">以下の表示を改善しました：</p>
+                <ul>
+                  <li>Vo / Da / Vi のタイプ表示に色を付け、視認性を改善しました</li>
+                  <li>おすすめ編成テーブルの横幅を調整し、スマホで見やすくしました</li>
+                  <li>PC版の表示幅を調整しました</li>
+                  <li>ヘッダー画像を変更しました</li>
+                </ul>
+
+
+
                 <p><strong>v1.0.4</strong></p>
                 <span className="versionDate"> - 2026/05/07</span>
                 <p className="changelogNote">サイトに以下の機能を追加しました：</p>
@@ -825,8 +1233,6 @@ function App() {
                   <p>おすすめ編成を計算・反映するようにしました</p>
                   <li>Pアイテム獲得のシナジーへの対応に伴い、計算条件のPアイテム獲得数を調整しました</li>
                 </ul>
-
-
                 <p className="changelogNote">以下の表示・動作を改善しました：</p>
                 <ul>
                   <li>SP率表示が、サポカの凸状況を正しく反映するようにしました</li>
@@ -984,15 +1390,16 @@ function App() {
               value={mode}
               onChange={(e) => {
                 const nextMode = e.target.value;
-                const nextPlan = Object.keys(contextPresets[nextMode].plans)[0];
-                const nextType = Object.keys(contextPresets[nextMode].plans[nextPlan].types)[0];
+                const nextEffectiveMode = getEffectiveMode(nextMode, isEnhancedMode);
+                const nextPlan = Object.keys(contextPresets[nextEffectiveMode].plans)[0];
+                const nextType = Object.keys(contextPresets[nextEffectiveMode].plans[nextPlan].types)[0];
 
                 setMode(nextMode);
                 setPlan(nextPlan);
                 setType(nextType);
               }}
             >
-              {Object.keys(contextPresets).map((m) => (
+              {BASE_MODE_KEYS.map((m) => (
                 <option key={m} value={m}>
                   {contextPresets[m].label}
                 </option>
@@ -1000,21 +1407,131 @@ function App() {
             </select>
           </label>
 
+          <label className="enhancedModeToggle">
+            <input
+              className="enhancedModeCheckbox"
+              type="checkbox"
+              checked={isEnhancedMode}
+              onChange={(e) => {
+                const nextEnhanced = e.target.checked;
+                const nextEffectiveMode = getEffectiveMode(mode, nextEnhanced);
+
+                const nextPlan = Object.keys(contextPresets[nextEffectiveMode].plans)[0];
+                const nextType =
+                  Object.keys(contextPresets[nextEffectiveMode].plans[nextPlan].types)[0];
+
+                setIsEnhancedMode(nextEnhanced);
+                setPlan(nextPlan);
+                setType(nextType);
+              }}
+            />
+            <span className="enhancedModeLabel">強化月間</span>
+          </label>
+
+          {mode === "hif" && (
+            <label>
+              HIF方針
+              <select
+                className="selectBox"
+                value={hifVariant}
+                onChange={(e) => setHifVariant(e.target.value)}
+              >
+                {Object.entries(HIF_VARIANTS).map(([variantKey, variant]) => (
+                  <option key={variantKey} value={variantKey}>
+                    {variant.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+
+          {mode === "hif" && (
+            <label>
+              試験パラメータ比率
+              <select
+                className="selectBox"
+                value={hifExamRatioPreset}
+                onChange={(e) => setHifExamRatioPreset(e.target.value)}
+              >
+                {Object.entries(HIF_EXAM_RATIO_PRESETS)
+                  .filter(([presetKey, preset]) => {
+                    if (presetKey === "manual") return true;
+                    return Boolean(preset.ratiosByType?.[type]);
+                  })
+                  .map(([presetKey, preset]) => (
+                    <option key={presetKey} value={presetKey}>
+                      {preset.label}
+                    </option>
+                  ))}
+              </select>
+            </label>
+          )}
+
+          {mode === "hif" && hifExamRatioPreset === "manual" && (
+            <div className="manualRatioInputs">
+              <label>
+                Vo
+                <input
+                  type="number"
+                  min="0"
+                  value={hifManualExamRatio.vo}
+                  onChange={(e) =>
+                    setHifManualExamRatio((prev) => ({
+                      ...prev,
+                      vo: Number(e.target.value),
+                    }))
+                  }
+                />
+              </label>
+
+              <label>
+                Da
+                <input
+                  type="number"
+                  min="0"
+                  value={hifManualExamRatio.vo}
+                  onChange={(e) =>
+                    setHifManualExamRatio((prev) => ({
+                      ...prev,
+                      vo: Number(e.target.value),
+                    }))
+                  }
+                />
+              </label>
+
+              <label>
+                Vi
+                <input
+                  type="number"
+                  min="0"
+                  value={hifManualExamRatio.vo}
+                  onChange={(e) =>
+                    setHifManualExamRatio((prev) => ({
+                      ...prev,
+                      vo: Number(e.target.value),
+                    }))
+                  }
+                />
+              </label>
+            </div>
+          )}
+
+
           <label>
             プラン
             <select
               value={plan}
               onChange={(e) => {
                 const nextPlan = e.target.value;
-                const nextType = Object.keys(contextPresets[mode].plans[nextPlan].types)[0];
+                const nextType = Object.keys(contextPresets[effectiveMode].plans[nextPlan].types)[0];
 
                 setPlan(nextPlan);
                 setType(nextType);
               }}
             >
-              {Object.keys(contextPresets[mode].plans).map((p) => (
+              {Object.keys(contextPresets[effectiveMode].plans).map((p) => (
                 <option key={p} value={p}>
-                  {contextPresets[mode].plans[p].label}
+                  {contextPresets[effectiveMode].plans[p].label}
                 </option>
               ))}
             </select>
@@ -1023,9 +1540,9 @@ function App() {
           <label>
             傾向
             <select value={type} onChange={(e) => setType(e.target.value)}>
-              {Object.keys(contextPresets[mode].plans[plan].types).map((t) => (
+              {Object.keys(contextPresets[effectiveMode].plans[plan].types).map((t) => (
                 <option key={t} value={t}>
-                  {contextPresets[mode].plans[plan].types[t].label}
+                  {contextPresets[effectiveMode].plans[plan].types[t].label}
                 </option>
               ))}
             </select>
@@ -1087,6 +1604,165 @@ function App() {
             </>
           )}
 
+
+          <details className="specialItemEffectBox">
+            <summary>Pアイテム効果補正</summary>
+
+            <div className="specialItemEffectDescription">
+              <p className="subText">
+                一部サポカのPアイテムによる追加発動を計算に反映します。
+                ONにすると、通常編成と補正あり編成を比較します。
+              </p>
+
+              <button
+                type="button"
+                className="smallHelpButton"
+                onClick={() => setIsSpecialItemHelpOpen(true)}
+              >
+                使い方
+              </button>
+            </div>
+
+            {isSpecialItemHelpOpen && (
+              <div
+                className="modalOverlay"
+                onClick={() => setIsSpecialItemHelpOpen(false)}
+              >
+                <div
+                  className="helpModal usageModal"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    type="button"
+                    className="modalCloseButton"
+                    onClick={() => setIsSpecialItemHelpOpen(false)}
+                  >
+                    ×
+                  </button>
+
+                  <h2>Pアイテム効果補正の使い方</h2>
+
+                  <ol className="usageList">
+                    <li>
+                      <strong>ONにすると、通常編成と補正あり編成を比較します。</strong>
+                      <br />
+                      OFFのままでは、回数を設定していても計算には反映されません。
+                    </li>
+
+                    <li>
+                      <strong>回数は「そのPアイテム効果を何回発動させるか」です。</strong>
+                      <br />
+                      平均からの差分ではなく、指定した回数分をそのまま計算します。
+                    </li>
+
+                    <li>
+                      <strong>所持していないサポカのPアイテムは表示されません。</strong>
+                      <br />
+                      所持サポカ登録で対象サポカを所持済みにすると表示されます。
+                    </li>
+
+                    <li>
+                      <strong>
+                        「ふわふわでもこもこ」と「ドリンク獲得追加」は別項目です。
+                      </strong>
+                      <br />
+                      「ふわふわでもこもこ」は、そのサポカを編成に入れる前提の固有補正です。
+                      <br />
+                      「ドリンク獲得追加」は、サポカを固定しない共通補正です。
+                    </li>
+                  </ol>
+                </div>
+              </div>
+            )}
+
+            <label className="enhancedModeToggle">
+              <input
+                className="enhancedModeCheckbox"
+                type="checkbox"
+                checked={isSpecialItemEffectEnabled}
+                onChange={(e) => setIsSpecialItemEffectEnabled(e.target.checked)}
+              />
+              <span className="enhancedModeLabel">
+                Pアイテム効果補正：{isSpecialItemEffectEnabled ? "ON" : "OFF"}
+              </span>
+            </label>
+
+            <div className="specialItemEffectControls">
+              <div className="specialItemEffectSection">
+                <div className="smallSectionTitle">共通補正</div>
+
+                {Object.entries(GENERAL_EFFECTS).map(([effectKey, effect]) => (
+                  <label key={effectKey}>
+                    {effect.label}
+                    <select
+                      className="selectBox"
+                      value={generalEffectCounts[effectKey] ?? 0}
+                      onChange={(e) =>
+                        setGeneralEffectCounts((prev) => ({
+                          ...prev,
+                          [effectKey]: Number(e.target.value),
+                        }))
+                      }
+                    >
+                      {Array.from({ length: effect.maxCount + 1 }, (_, count) => (
+                        <option key={count} value={count}>
+                          {count}回
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                ))}
+              </div>
+
+              <div className="specialItemEffectSection">
+                <div className="smallSectionTitle">サポカ固有補正</div>
+
+                {Object.entries(SPECIAL_ITEM_EFFECTS).map(([effectKey, effect]) => {
+                  const effectCard = cards.find(
+                    (card) => String(card.card_id) === String(effect.cardId)
+                  );
+
+                  if (!effectCard) return null;
+                  if (!isCardAvailableForPlan(effectCard, plan)) return null;
+                  if (!ownedCards[effectCard.card_id]?.owned) return null;
+
+                  return (
+                    <label key={effectKey}>
+                      {effect.label}
+                      <select
+                        className="selectBox"
+                        value={specialItemEffectCounts[effectKey] ?? 0}
+                        onChange={(e) =>
+                          setSpecialItemEffectCounts((prev) => ({
+                            ...prev,
+                            [effectKey]: Number(e.target.value),
+                          }))
+                        }
+                      >
+                        {Array.from({ length: effect.maxCount + 1 }, (_, count) => (
+                          <option key={count} value={count}>
+                            {count}回
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  );
+                })}
+              </div>
+
+              <button
+                type="button"
+                className="secondaryButton"
+                onClick={() => {
+                  setSpecialItemEffectCounts(createDefaultSpecialItemEffectCounts());
+                  setGeneralEffectCounts(createDefaultGeneralEffectCounts());
+                }}
+              >
+                補正回数をリセット
+              </button>
+            </div>
+          </details>
+
           <button
             className="primaryButton"
             onClick={() => {
@@ -1097,6 +1773,13 @@ function App() {
                 type,
                 minSpCards,
                 spTypePriority,
+                isEnhancedMode,
+                hifVariant,
+                hifExamRatioPreset,
+                hifManualExamRatio,
+                isSpecialItemEffectEnabled,
+                specialItemEffectCounts,
+                generalEffectCounts,
               });
               setShowResult(true);
             }}
@@ -1124,10 +1807,14 @@ function App() {
               {resultViewMode === "recommend" && (
                 <>
                   <h2>おすすめ編成</h2>
-
-                  {recommendedPatternResults.map((patternResult) => (
-                    <div className="patternResult" key={patternResult.patternName}>
+                  {sortedRecommendedPatternResults.map((patternResult, index) => (
+                    <div
+                      key={`${patternResult.scenarioKey ?? "normal"}-${patternResult.patternName}`}
+                      className="resultBlock"
+                    >
                       <h3>
+                        {rankEmojis[index] ?? ""}
+                        {patternResult.scenarioLabel && `${patternResult.scenarioLabel} / `}
                         {patternResult.patternName}（合計スコア{" "}
                         {patternResult.totalScore.toFixed(1)}）
                       </h3>
@@ -1136,7 +1823,7 @@ function App() {
                         <p>条件を満たす編成が見つかりませんでした。</p>
                       ) : (
                         <div className="tableScroll">
-                          <table className="resultTable">
+                          <table className="resultTable recommendTable">
                             <thead>
                               <tr>
                                 <th>レンタル</th>
@@ -1153,7 +1840,11 @@ function App() {
                                   <td>{result.isRental ? "○" : ""}</td>
                                   <td>{result.card.name}</td>
                                   <td>{formatScore(result.displayScore ?? result.score)}</td>
-                                  <td>{result.card.param_type}</td>
+                                  <td>
+                                    <span className={`paramTypeBadge ${getParamTypeClass(result.card.param_type)}`}>
+                                      {result.card.param_type}
+                                    </span>
+                                  </td>
                                   <td>{getSpRate(result)}</td>
                                 </tr>
                               ))}
@@ -1211,7 +1902,11 @@ function App() {
                             )}
 
                             <td>{result.card.name}</td>
-                            <td>{result.card.param_type}</td>
+                            <td>
+                              <span className={`paramTypeBadge ${getParamTypeClass(result.card.param_type)}`}>
+                                {result.card.param_type}
+                              </span>
+                            </td>
                             <td>{formatScore(result.currentScore)}</td>
                             <td>{formatScore(result.score0)}</td>
                             <td>{formatScore(result.score1)}</td>
@@ -1272,6 +1967,22 @@ function App() {
           <div className="ownedButtons">
             <button className="dangerButton" onClick={resetOwnedCards}>
               所持状況をリセット
+            </button>
+
+            <button
+              type="button"
+              className="secondaryButton"
+              onClick={() => {
+                const ok = window.confirm(
+                  "全サポカを所持済み・4凸として登録します。現在の所持状況は上書きされます。よろしいですか？"
+                );
+
+                if (!ok) return;
+
+                registerAllCardsMaxLimitBreak();
+              }}
+            >
+              全サポカを完凸で登録
             </button>
 
             <button className="secondaryButton" onClick={downloadOwnedCardsCsv}>
@@ -1336,8 +2047,16 @@ function App() {
             {filteredOwnedCards
               .slice()
               .sort((a, b) => {
-                if (a.card_id === NEW_CARD_ID) return -1;
-                if (b.card_id === NEW_CARD_ID) return 1;
+                const aNewIndex = NEW_CARD_IDS.indexOf(String(a.card_id));
+                const bNewIndex = NEW_CARD_IDS.indexOf(String(b.card_id));
+
+                const aIsNew = aNewIndex !== -1;
+                const bIsNew = bNewIndex !== -1;
+
+                if (aIsNew && bIsNew) return aNewIndex - bNewIndex;
+                if (aIsNew) return -1;
+                if (bIsNew) return 1;
+
                 return 0;
               })
               .map((card) => {
@@ -1363,7 +2082,9 @@ function App() {
                       <span>{card.name}</span>
                     </div>
 
-                    <span className="ownedType">{card.param_type}</span>
+                    <span className={`ownedType ${getParamTypeClass(card.param_type)}`}>
+                      {card.param_type}
+                    </span>
 
                     <select
                       value={limitBreak}

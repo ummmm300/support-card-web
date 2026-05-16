@@ -384,6 +384,17 @@ export const abilityDb = {
     ],
     "limit_count": -1
   },
+  "on_outing_2times_id__SSR": {
+    "kind": "on_outing_2times",
+    "values": [
+      28.0,
+      38.0,
+      38.0,
+      38.0,
+      38.0
+    ],
+    "limit_count": 2.0
+  },
   "on_rest_id__SSR": {
     "kind": "on_rest",
     "values": [
@@ -1110,25 +1121,14 @@ export const abilityDb = {
     ],
     "limit_count": 1.0
   },
-  "on_class_da30_id__SSR": {
+  "on_class_da20_id__SSR": {
     "kind": "on_class",
     "values": [
-      30.0,
-      30.0,
-      30.0,
-      30.0,
-      30.0
-    ],
-    "limit_count": 1.0
-  },
-  "on_class_vi22_id__SSR": {
-    "kind": "on_class",
-    "values": [
-      22.0,
-      22.0,
-      22.0,
-      22.0,
-      22.0
+      20.0,
+      20.0,
+      20.0,
+      20.0,
+      20.0
     ],
     "limit_count": 1.0
   },

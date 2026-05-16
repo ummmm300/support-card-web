@@ -37,6 +37,7 @@ export const KIND_TO_CONTEXT_KEY = {
   on_supply: "supply_count",
   on_consult: "consult_count",
   on_outing: "outing_count",
+  on_outing_2times: "outing_count", 
   on_rest: "rest_count",
   on_exam_end: "exam_end_count",
   on_special_training: "special_training_count",
