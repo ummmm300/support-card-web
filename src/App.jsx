@@ -1572,7 +1572,6 @@ function App() {
             </div>
           )}
 
-
           <label>
             プラン
             <select
@@ -1628,8 +1627,6 @@ function App() {
               </table>
             </div>
           </details>
-
-
 
           <label>
             SP率サポカの最低枚数
