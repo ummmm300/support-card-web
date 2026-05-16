@@ -224,7 +224,11 @@ function App() {
     isSpecialItemEffectEnabled: false,
     specialItemEffectCounts: createDefaultSpecialItemEffectCounts(),
     generalEffectCounts: createDefaultGeneralEffectCounts(),
+    fixedCardIds: [],
   });
+
+  const [fixedCardSearchText, setFixedCardSearchText] = useState("");
+  const [fixedCardIds, setFixedCardIds] = useState([]);
 
   const calculationMode = calculationSettings.mode;
   const calculationPlan = calculationSettings.plan;
@@ -243,6 +247,9 @@ function App() {
     calculationSettings?.spTypePriority ?? "none";
   const minDaSpCards =
     calculationSpTypePriority === "da2" ? 2 : 0;
+  const calculationFixedCardIds =
+    calculationSettings?.fixedCardIds ?? [];
+
 
   const calculationContext = useMemo(() => {
     const baseContext =
@@ -342,6 +349,20 @@ function App() {
     localStorage.setItem("ownedCards", JSON.stringify(ownedCards));
   }, [ownedCards]);
 
+  useEffect(() => {
+    setFixedCardIds((prev) =>
+      prev.filter((cardId) => {
+        const card = cards.find((c) => String(c.card_id) === String(cardId));
+        if (!card) return false;
+
+        if (!ownedCards?.[card.card_id]?.owned) return false;
+        if (!isCardAvailableForPlan(card, plan)) return false;
+
+        return true;
+      })
+    );
+  }, [ownedCards, plan]);
+
   const [calculationOwnedCards, setCalculationOwnedCards] = useState(ownedCards);
 
   const [ownedSearchText, setOwnedSearchText] = useState("");
@@ -350,8 +371,36 @@ function App() {
 
   const effectiveMode = getEffectiveMode(mode, isEnhancedMode);
 
-  const context =
-    contextPresets[effectiveMode].plans[plan].types[type].context;
+  const displayContext = useMemo(() => {
+    const baseContext =
+      contextPresets[effectiveMode]
+        .plans[plan]
+        .types[type]
+        .context;
+
+    if (effectiveMode !== "hif") {
+      return baseContext;
+    }
+
+    const contextWithHifVariant = {
+      ...baseContext,
+      ...(HIF_VARIANTS[hifVariant]?.contextOverrides ?? {}),
+    };
+
+    return applyHifExamParamsToContext({
+      context: contextWithHifVariant,
+      type,
+      examRatioPresetKey: hifExamRatioPreset,
+      manualRatio: hifManualExamRatio,
+    });
+  }, [
+    effectiveMode,
+    plan,
+    type,
+    hifVariant,
+    hifExamRatioPreset,
+    hifManualExamRatio,
+  ]);
 
   function updateOwnedCard(cardId, key, value) {
     setOwnedCards((prev) => ({
@@ -420,7 +469,6 @@ function App() {
     const reader = new FileReader();
 
     reader.onload = (e) => {
-      F
       const text = e.target.result;
       const lines = text.trim().split(/\r?\n/);
 
@@ -595,13 +643,17 @@ function App() {
     forcedCardIds = [],
   }) {
 
-    const forcedCardIdSet = new Set(forcedCardIds);
-
-    const forcedResults = ownedResults.filter((result) =>
-      forcedCardIdSet.has(result.card.card_id)
+    const normalizedForcedCardIds = Array.from(
+      new Set(forcedCardIds.map((id) => String(id)))
     );
 
-    if (forcedResults.length !== forcedCardIds.length) {
+    const forcedCardIdSet = new Set(normalizedForcedCardIds);
+
+    const forcedResults = ownedResults.filter((result) =>
+      forcedCardIdSet.has(String(result.card.card_id))
+    );
+
+    if (forcedResults.length !== normalizedForcedCardIds.length) {
       return null;
     }
 
@@ -618,7 +670,7 @@ function App() {
     }
 
     const selectableOwnedResults = ownedResults.filter(
-      (result) => !forcedCardIdSet.has(result.card.card_id)
+      (result) => !forcedCardIdSet.has(String(result.card.card_id))
     );
 
     const groups = Object.fromEntries(
@@ -916,12 +968,13 @@ function App() {
     let bestTotalScore = -Infinity;
 
     const limitedRentalResults = rentalResults.slice(0, 12);
-    const forcedCardIdSet = new Set(forcedCardIds);
+    const forcedCardIdSet = new Set(forcedCardIds.map((id) => String(id)));
 
     for (const rentalResult of limitedRentalResults) {
-      if (forcedCardIdSet.has(rentalResult.card.card_id)) {
+      if (forcedCardIdSet.has(String(rentalResult.card.card_id))) {
         continue;
       }
+
       const remainingPattern = { ...pattern };
       const rentalType = rentalResult.card.param_type;
 
@@ -1048,7 +1101,7 @@ function App() {
         context: calculationContext,
         ownedResults: ownedCardResults,
         rentalResults: rentalCardResults,
-        forcedCardIds: [],
+        forcedCardIds: calculationFixedCardIds,
       },
     ];
 
@@ -1083,8 +1136,11 @@ function App() {
         context: adjustedContext,
         ownedResults: adjustedOwnedResults,
         rentalResults: adjustedRentalResults,
-        forcedCardIds: activeSpecialItemEffects.map(
-          ([, effect]) => effect.cardId
+        forcedCardIds: Array.from(
+          new Set([
+            ...calculationFixedCardIds.map(String),
+            ...activeSpecialItemEffects.map(([, effect]) => String(effect.cardId)),
+          ])
         ),
       });
     }
@@ -1562,7 +1618,7 @@ function App() {
                 </thead>
 
                 <tbody>
-                  {Object.entries(context).map(([key, value]) => (
+                  {Object.entries(displayContext).map(([key, value]) => (
                     <tr key={key}>
                       <td>{CONTEXT_LABELS[key] ?? key}</td>
                       <td>{value}</td>
@@ -1604,6 +1660,81 @@ function App() {
             </>
           )}
 
+          <div className="fixedCardBox">
+            <div className="sectionTitle">確定編成サポカ</div>
+
+            <p className="subText">
+              指定したサポカを必ず編成に入れて計算します。
+            </p>
+
+            <input
+              className="searchInput"
+              type="text"
+              value={fixedCardSearchText}
+              onChange={(e) => setFixedCardSearchText(e.target.value)}
+              placeholder="サポカ名で検索"
+            />
+
+            {fixedCardSearchText && (
+              <div className="fixedCardSearchResults">
+                {cards
+                  .filter((card) => ownedCards?.[card.card_id]?.owned)
+                  .filter((card) => isCardAvailableForPlan(card, plan))
+                  .filter((card) => !fixedCardIds.some((id) => String(id) === String(card.card_id)))
+                  .filter((card) => card.name.includes(fixedCardSearchText))
+                  .slice(0, 10)
+                  .map((card) => (
+                    <button
+                      key={card.card_id}
+                      type="button"
+                      className="fixedCardSearchItem"
+                      onClick={() => {
+                        setFixedCardIds((prev) => {
+                          if (prev.some((id) => String(id) === String(card.card_id))) {
+                            return prev;
+                          }
+
+                          if (prev.length >= 5) {
+                            return prev;
+                          }
+
+                          return [...prev, card.card_id];
+                        });
+
+                        setFixedCardSearchText("");
+                      }}
+                    >
+                      {card.name}
+                    </button>
+                  ))}
+              </div>
+            )}
+
+            {fixedCardIds.length > 0 && (
+              <div className="fixedCardList">
+                {fixedCardIds.map((cardId) => {
+                  const card = cards.find((c) => String(c.card_id) === String(cardId));
+                  if (!card) return null;
+
+                  return (
+                    <div key={cardId} className="fixedCardChip">
+                      <span>{card.name}</span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setFixedCardIds((prev) =>
+                            prev.filter((id) => String(id) !== String(cardId))
+                          )
+                        }
+                      >
+                        ×
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
 
           <details className="specialItemEffectBox">
             <summary>Pアイテム効果補正</summary>
@@ -1780,6 +1911,7 @@ function App() {
                 isSpecialItemEffectEnabled,
                 specialItemEffectCounts,
                 generalEffectCounts,
+                fixedCardIds,
               });
               setShowResult(true);
             }}

@@ -1199,3 +1199,56 @@ body.darkModeBody #root {
   font-weight: 700;
   cursor: pointer;
 }
+
+.fixedCardBox {
+  margin-top: 16px;
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--card-bg);
+}
+
+.fixedCardSearchResults {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fixedCardSearchItem {
+  text-align: left;
+  padding: 8px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--card-bg);
+  color: var(--text-color);
+  cursor: pointer;
+}
+
+.fixedCardSearchItem:hover {
+  opacity: 0.85;
+}
+
+.fixedCardList {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.fixedCardChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(127, 127, 127, 0.12);
+}
+
+.fixedCardChip button {
+  border: none;
+  background: transparent;
+  color: var(--text-color);
+  cursor: pointer;
+  font-weight: 700;
+}
