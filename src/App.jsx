@@ -1489,11 +1489,11 @@ function App() {
                 <input
                   type="number"
                   min="0"
-                  value={hifManualExamRatio.vo}
+                  value={hifManualExamRatio.da}
                   onChange={(e) =>
                     setHifManualExamRatio((prev) => ({
                       ...prev,
-                      vo: Number(e.target.value),
+                      da: Number(e.target.value),
                     }))
                   }
                 />
@@ -1504,11 +1504,11 @@ function App() {
                 <input
                   type="number"
                   min="0"
-                  value={hifManualExamRatio.vo}
+                  value={hifManualExamRatio.vi}
                   onChange={(e) =>
                     setHifManualExamRatio((prev) => ({
                       ...prev,
-                      vo: Number(e.target.value),
+                      vi: Number(e.target.value),
                     }))
                   }
                 />
