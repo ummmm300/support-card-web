@@ -1768,7 +1768,6 @@ export const HIF_VARIANTS = {
         label: "相談ドリンク交換軸（花うさぎ：緑）",
         description: "ドリンク交換を多めに見る設定",
         contextOverrides: {
-            consult_count: 3,
             get_drink_count: 20,
             drink_exchange_count: 16,
         },
