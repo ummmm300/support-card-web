@@ -9,7 +9,7 @@ export const KIND_TO_CONTEXT_KEY = {
   on_sp_vo: "sp_vo_count",
   on_sp_da: "sp_da_count",
   on_sp_vi: "sp_vi_count",
-  on_sp_20: "totalSpLessonCount",
+  on_sp_20: "sp_20_count",
 
   on_lesson_vo: "lesson_vo_count",
   on_lesson_da: "lesson_da_count",
@@ -37,7 +37,7 @@ export const KIND_TO_CONTEXT_KEY = {
   on_supply: "supply_count",
   on_consult: "consult_count",
   on_outing: "outing_count",
-  on_outing_2times: "outing_count", 
+  on_outing_2times: "outing_count",
   on_rest: "rest_count",
   on_exam_end: "exam_end_count",
   on_special_training: "special_training_count",

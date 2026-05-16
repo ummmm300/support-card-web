@@ -22,6 +22,7 @@ const CONTEXT_LABELS = {
   sp_vo_count: "VoSPレッスン回数",
   sp_da_count: "DaSPレッスン回数",
   sp_vi_count: "ViSPレッスン回数",
+  sp_20_count: "20枚以上所持時SP発動回数",
 
   lesson_vo_count: "Voレッスン回数",
   lesson_da_count: "Daレッスン回数",
@@ -196,6 +197,8 @@ function App() {
     vi: 1,
   });
 
+  const [hifManualContextOverrides, setHifManualContextOverrides] = useState({});
+
   const [generalEffectCounts, setGeneralEffectCounts] = useState(
     createDefaultGeneralEffectCounts
   );
@@ -225,6 +228,7 @@ function App() {
     specialItemEffectCounts: createDefaultSpecialItemEffectCounts(),
     generalEffectCounts: createDefaultGeneralEffectCounts(),
     fixedCardIds: [],
+    hifManualContextOverrides: {},
   });
 
   const [fixedCardSearchText, setFixedCardSearchText] = useState("");
@@ -275,10 +279,19 @@ function App() {
         vi: 1,
       };
 
-    const contextWithHifVariant = {
-      ...baseContext,
-      ...(HIF_VARIANTS[hifVariant]?.contextOverrides ?? {}),
-    };
+    const hifManualContextOverrides =
+      calculationSettings?.hifManualContextOverrides ?? {};
+
+    const contextWithHifVariant =
+      hifVariant === "manual"
+        ? {
+          ...baseContext,
+          ...hifManualContextOverrides,
+        }
+        : {
+          ...baseContext,
+          ...(HIF_VARIANTS[hifVariant]?.contextOverrides ?? {}),
+        };
 
     return applyHifExamParamsToContext({
       context: contextWithHifVariant,
@@ -293,6 +306,7 @@ function App() {
     calculationSettings?.hifVariant,
     calculationSettings?.hifExamRatioPreset,
     calculationSettings?.hifManualExamRatio,
+    calculationSettings?.hifManualContextOverrides,
   ]);
 
   const [showResult, setShowResult] = useState(false);
@@ -382,10 +396,16 @@ function App() {
       return baseContext;
     }
 
-    const contextWithHifVariant = {
-      ...baseContext,
-      ...(HIF_VARIANTS[hifVariant]?.contextOverrides ?? {}),
-    };
+    const contextWithHifVariant =
+      hifVariant === "manual"
+        ? {
+          ...baseContext,
+          ...hifManualContextOverrides,
+        }
+        : {
+          ...baseContext,
+          ...(HIF_VARIANTS[hifVariant]?.contextOverrides ?? {}),
+        };
 
     return applyHifExamParamsToContext({
       context: contextWithHifVariant,
@@ -400,6 +420,7 @@ function App() {
     hifVariant,
     hifExamRatioPreset,
     hifManualExamRatio,
+    hifManualContextOverrides,
   ]);
 
   function updateOwnedCard(cardId, key, value) {
@@ -1489,7 +1510,7 @@ function App() {
 
           {mode === "hif" && (
             <label>
-              HIF方針
+              プレイ方針
               <select
                 className="selectBox"
                 value={hifVariant}
@@ -1502,6 +1523,46 @@ function App() {
                 ))}
               </select>
             </label>
+          )}
+
+          {mode === "hif" && hifVariant === "manual" && (
+            <details className="manualHifContextBox" open>
+              <summary>HIF計算条件を手動調整</summary>
+
+              <p className="subText">
+                HIF標準値をもとに、各発動回数や獲得数を手動で上書きします。
+                試験パラメータ分は下の「試験パラメータ比率」で別途加算されます。
+              </p>
+
+              <div className="manualHifContextGrid">
+                {Object.entries(
+                  contextPresets.hif.plans[plan].types[type].context
+                ).map(([contextKey, baseValue]) => (
+                  <label key={contextKey}>
+                    {CONTEXT_LABELS[contextKey] ?? contextKey}
+                    <input
+                      type="number"
+                      min="0"
+                      value={hifManualContextOverrides[contextKey] ?? baseValue}
+                      onChange={(e) =>
+                        setHifManualContextOverrides((prev) => ({
+                          ...prev,
+                          [contextKey]: Number(e.target.value),
+                        }))
+                      }
+                    />
+                  </label>
+                ))}
+              </div>
+
+              <button
+                type="button"
+                className="secondaryButton"
+                onClick={() => setHifManualContextOverrides({})}
+              >
+                手動調整をリセット
+              </button>
+            </details>
           )}
 
           {mode === "hif" && (
@@ -1912,6 +1973,7 @@ function App() {
                 specialItemEffectCounts,
                 generalEffectCounts,
                 fixedCardIds,
+                hifManualContextOverrides,
               });
               setShowResult(true);
             }}

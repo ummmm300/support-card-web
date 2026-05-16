@@ -102,3 +102,28 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 }
+
+.manualHifContextBox {
+  margin-top: 16px;
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--card-bg);
+}
+
+.manualHifContextGrid {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.manualHifContextGrid label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.manualHifContextGrid input {
+  padding: 6px 8px;
+}
