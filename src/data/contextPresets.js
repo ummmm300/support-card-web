@@ -1758,8 +1758,10 @@ export const HIF_VARIANTS = {
         contextOverrides: {
             supply_count: 5,
             outing_count: 1,
-            get_drink_count: 24,
+            get_drink_count: 28,
             drink_exchange_count: 8,
+            special_training_count: 0,
+            customize_count: 3,
         },
     },
 
@@ -1770,7 +1772,7 @@ export const HIF_VARIANTS = {
             consult_count: 3,
             special_training_count: 0,
             customize_count: 1,
-            get_drink_count: 20,
+            get_drink_count: 26,
             drink_exchange_count: 16,
         },
     },
@@ -1798,8 +1800,10 @@ export const HIF_VARIANTS = {
             sp_vi_count: 0,
             supply_count: 5,
             outing_count: 1,
-            get_drink_count: 24,
-            drink_exchange_count: 8,
+            special_training_count: 0,
+            customize_count: 1,
+            get_drink_count: 28,
+            drink_exchange_count: 10,
         },
     },
 
