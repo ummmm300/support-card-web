@@ -1256,7 +1256,7 @@ function App() {
               alt="サポカ計算機"
             />
             <h1 className="mainTitle">サポカ計算機</h1>
-            <span className="version">v1.1.0 - 「HIF」に対応しました</span>
+            <span className="version">v1.1.1 - ドリンク獲得のプリセットの調整</span>
             <p className="appDescription">
               所持サポカからおすすめ上位6枚を自動計算します。
             </p>
@@ -1275,6 +1275,19 @@ function App() {
 
                 <h2>更新履歴</h2>
 
+               <p><strong>v1.1.1</strong></p>
+                <span className="versionDate"> - 2026/05/18</span>
+                <p className="changelogNote">サイトに以下の機能を追加しました：</p>
+                <ul>
+                  <li>ドリンク獲得のプリセットを微調整しました</li>
+                  <li>"ふわふわでもこもこ"の最大発動回数を8回にしました</li>
+                </ul>
+                <p className="subText">
+                  ※HIF編の計算条件は仮設定であり、順次調整する予定です。
+                  <br />
+                  ※HIFの強化月間は未対応のため、ONにしても通常HIFと同じ条件で計算されます。
+                </p>
+
                 <p><strong>v1.1.0</strong></p>
                 <span className="versionDate"> - 2026/05/16</span>
                 <p className="changelogNote">サイトに以下の機能を追加しました：</p>
@@ -1282,11 +1295,6 @@ function App() {
                   <li>新モード「HIF」に対応しました</li>
                   <li>強化月間ON/OFFに対応したモード切り替えUIを追加しました</li>
                 </ul>
-                <p className="subText">
-                  ※HIF編の計算条件は仮設定であり、順次調整する予定です。
-                  <br />
-                  ※HIFの強化月間は未対応のため、ONにしても通常HIFと同じ条件で計算されます。
-                </p>
 
                 <p className="changelogNote">以下の表示を改善しました：</p>
                 <ul>

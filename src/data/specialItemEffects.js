@@ -61,7 +61,7 @@ export const SPECIAL_ITEM_EFFECTS = {
     supportCardG: {
         label: "ふわふわでもこもこ",
         cardId: "card_105",
-        maxCount: 7,
+        maxCount: 8,
         contextAdds: {
             get_drink_count: 2,
         },
