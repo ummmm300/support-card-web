@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import "./App.css";
 import { calcCardScore, calcDeckSynergyScore, getAbilityGradeIndex } from "./lib/calc";
 import { abilityDb } from "./data/abilityDb";
@@ -74,12 +74,43 @@ const TREND_TO_TYPES = {
   davi: ["Da", "Vi", "Vo"],
   vovi: ["Vo", "Vi", "Da"],
 };
+const TREND_TO_VALID_SP_TYPES = {
+  voda: ["Vo", "Da"],
+  davi: ["Da", "Vi"],
+  vovi: ["Vo", "Vi"],
+};
 
 const PATTERN_COUNTS = {
   "3/3/0": [3, 3, 0],
   "3/2/1": [3, 2, 1],
   "2/3/1": [2, 3, 1],
   "2/2/2": [2, 2, 2],
+};
+
+const SPECIAL_HIF_DA4_PATTERNS = {
+  voda: [
+    {
+      patternName: "2/4/0",
+      pattern: { Vo: 2, Da: 4, Vi: 0 },
+    },
+    {
+      patternName: "1/4/1",
+      pattern: { Vo: 1, Da: 4, Vi: 1 },
+    },
+  ],
+
+  davi: [
+    {
+      patternName: "0/4/2",
+      pattern: { Vo: 0, Da: 4, Vi: 2 },
+    },
+    {
+      patternName: "1/4/1",
+      pattern: { Vo: 1, Da: 4, Vi: 1 },
+    },
+  ],
+
+  vovi: [],
 };
 
 function isCardAvailableForPlan(card, plan) {
@@ -179,6 +210,63 @@ const BASE_MODE_KEYS = ["hif", "legend"];
 
 const NEW_CARD_IDS = ["card_109", "card_108"];
 
+const FUWAMOKO_HIF_VARIANT_KEY = "fuwamokoDa4";
+
+const FUWAMOKO_EFFECT_KEY = "supportCardG";
+
+const SP_MIN_MANUAL_VALUE = "manual";
+
+const SP_TO_TOTAL_LESSON_COUNT_KEY = {
+  sp_vo_count: "lesson_vo_count",
+  sp_da_count: "lesson_da_count",
+  sp_vi_count: "lesson_vi_count",
+};
+
+const TOTAL_TO_SP_LESSON_COUNT_KEY = {
+  lesson_vo_count: "sp_vo_count",
+  lesson_da_count: "sp_da_count",
+  lesson_vi_count: "sp_vi_count",
+};
+
+function createDefaultManualDeckPattern() {
+  return {
+    useNormalPatterns: true,
+    vo: 2,
+    da: 2,
+    vi: 2,
+  };
+}
+
+function createDefaultManualSpCardConditions() {
+  return {
+    total: 0,
+    vo: 0,
+    da: 0,
+    vi: 0,
+  };
+}
+
+function normalizeManualSpCardConditionsForTrend(conditions, trend) {
+  const validSpTypes = TREND_TO_VALID_SP_TYPES[trend] ?? [];
+
+  return {
+    total: Number(conditions?.total ?? 0),
+    vo: validSpTypes.includes("Vo") ? Number(conditions?.vo ?? 0) : 0,
+    da: validSpTypes.includes("Da") ? Number(conditions?.da ?? 0) : 0,
+    vi: validSpTypes.includes("Vi") ? Number(conditions?.vi ?? 0) : 0,
+  };
+}
+
+function createDefaultManualSpCardConditionsForTrend(trend) {
+  const validSpTypes = TREND_TO_VALID_SP_TYPES[trend] ?? [];
+
+  return {
+    total: 3,
+    vo: validSpTypes.includes("Vo") ? 1 : 0,
+    da: validSpTypes.includes("Da") ? 1 : 0,
+    vi: validSpTypes.includes("Vi") ? 1 : 0,
+  };
+}
 
 function App() {
 
@@ -186,7 +274,9 @@ function App() {
   const [plan, setPlan] = useState("sense");
   const [type, setType] = useState("voda");
   const [minSpCards, setMinSpCards] = useState(0);
-  const [spTypePriority, setSpTypePriority] = useState("none");
+  const [manualSpCardConditions, setManualSpCardConditions] = useState(
+    createDefaultManualSpCardConditions
+  );
   const [isEnhancedMode, setIsEnhancedMode] = useState(false);
   const [hifVariant, setHifVariant] = useState("standard");
   const [hifExamRatioPreset, setHifExamRatioPreset] = useState("trendPair");
@@ -196,6 +286,10 @@ function App() {
     da: 4,
     vi: 1,
   });
+
+  const [hifManualDeckPattern, setHifManualDeckPattern] = useState(
+    createDefaultManualDeckPattern
+  );
 
   const [hifManualContextOverrides, setHifManualContextOverrides] = useState({});
 
@@ -210,12 +304,13 @@ function App() {
     createDefaultSpecialItemEffectCounts
   );
 
+  const wasFuwamokoDa4ModeRef = useRef(false);
+
   const [calculationSettings, setCalculationSettings] = useState({
     mode: "legend",
     plan: "sense",
     type: "voda",
     minSpCards: 0,
-    spTypePriority: "none",
     isEnhancedMode: false,
     hifVariant: "standard",
     hifExamRatioPreset: "trendPair",
@@ -224,11 +319,13 @@ function App() {
       da: 4,
       vi: 1,
     },
+    hifManualDeckPattern: createDefaultManualDeckPattern(),
     isSpecialItemEffectEnabled: false,
     specialItemEffectCounts: createDefaultSpecialItemEffectCounts(),
     generalEffectCounts: createDefaultGeneralEffectCounts(),
     fixedCardIds: [],
     hifManualContextOverrides: {},
+    manualSpCardConditions: createDefaultManualSpCardConditions(),
   });
 
   const [fixedCardSearchText, setFixedCardSearchText] = useState("");
@@ -239,6 +336,25 @@ function App() {
   const calculationType = calculationSettings.type;
   const calculationMinSpCards = calculationSettings.minSpCards;
 
+  const calculationManualSpCardConditions =
+    calculationSettings?.manualSpCardConditions ??
+    createDefaultManualSpCardConditions();
+
+  const calculationIsManualSpCondition =
+    calculationMinSpCards === SP_MIN_MANUAL_VALUE;
+
+  const calculationSpCardConditions = calculationIsManualSpCondition
+    ? normalizeManualSpCardConditionsForTrend(
+      calculationManualSpCardConditions,
+      calculationType
+    )
+    : {
+      total: Number(calculationMinSpCards ?? 0),
+      vo: 0,
+      da: 0,
+      vi: 0,
+    };
+
   const calculationIsEnhancedMode =
     calculationSettings?.isEnhancedMode ?? false;
 
@@ -247,13 +363,8 @@ function App() {
     calculationIsEnhancedMode
   );
 
-  const calculationSpTypePriority =
-    calculationSettings?.spTypePriority ?? "none";
-  const minDaSpCards =
-    calculationSpTypePriority === "da2" ? 2 : 0;
   const calculationFixedCardIds =
     calculationSettings?.fixedCardIds ?? [];
-
 
   const calculationContext = useMemo(() => {
     const baseContext =
@@ -327,8 +438,6 @@ function App() {
   const [showStatus, setShowStatus] = useState(false);
   const [isSpecialItemHelpOpen, setIsSpecialItemHelpOpen] = useState(false);
 
-  const shouldShowSpTypePriority =
-    isEnhancedMode && Number(minSpCards) >= 3;
 
   useEffect(() => {
     localStorage.setItem("theme", theme);
@@ -341,12 +450,6 @@ function App() {
       document.documentElement.classList.remove("darkModeHtml");
     }
   }, [theme]);
-
-  useEffect(() => {
-    if (!shouldShowSpTypePriority) {
-      setSpTypePriority("none");
-    }
-  }, [shouldShowSpTypePriority]);
 
   const [ownedCards, setOwnedCards] = useState(() => {
     const saved = localStorage.getItem("ownedCards");
@@ -385,6 +488,113 @@ function App() {
 
   const effectiveMode = getEffectiveMode(mode, isEnhancedMode);
 
+  useEffect(() => {
+    if (minSpCards === SP_MIN_MANUAL_VALUE) {
+      setManualSpCardConditions(
+        createDefaultManualSpCardConditionsForTrend(type)
+      );
+      return;
+    }
+
+    const validSpTypes = TREND_TO_VALID_SP_TYPES[type] ?? [];
+
+    setManualSpCardConditions((prev) => {
+      const next = {
+        ...prev,
+        vo: validSpTypes.includes("Vo") ? prev.vo : 0,
+        da: validSpTypes.includes("Da") ? prev.da : 0,
+        vi: validSpTypes.includes("Vi") ? prev.vi : 0,
+      };
+
+      if (
+        next.vo === prev.vo &&
+        next.da === prev.da &&
+        next.vi === prev.vi
+      ) {
+        return prev;
+      }
+
+      return next;
+    });
+  }, [type, minSpCards]);
+
+  const availableTypesForCurrentSelection = useMemo(() => {
+    const allTypes = Object.keys(
+      contextPresets[effectiveMode].plans[plan].types
+    );
+
+    if (mode === "hif" && hifVariant === FUWAMOKO_HIF_VARIANT_KEY) {
+      return allTypes.filter((typeKey) => typeKey !== "vovi");
+    }
+
+    return allTypes;
+  }, [effectiveMode, plan, mode, hifVariant]);
+
+  const validManualSpTypes = TREND_TO_VALID_SP_TYPES[type] ?? [];
+
+  useEffect(() => {
+    if (mode !== "hif") return;
+    if (hifVariant !== FUWAMOKO_HIF_VARIANT_KEY) return;
+    if (type !== "vovi") return;
+
+    const nextType =
+      availableTypesForCurrentSelection.includes("voda")
+        ? "voda"
+        : availableTypesForCurrentSelection[0];
+
+    if (nextType) {
+      setType(nextType);
+    }
+  }, [mode, hifVariant, type, availableTypesForCurrentSelection]);
+
+  useEffect(() => {
+    if (mode !== "hif") return;
+    if (hifVariant !== FUWAMOKO_HIF_VARIANT_KEY) return;
+
+    setIsSpecialItemEffectEnabled(true);
+
+    setSpecialItemEffectCounts((prev) => {
+      const effect = SPECIAL_ITEM_EFFECTS[FUWAMOKO_EFFECT_KEY];
+
+      if (!effect) {
+        return prev;
+      }
+
+      const targetCount = Math.min(8, effect.maxCount ?? 8);
+
+      if (Number(prev?.[FUWAMOKO_EFFECT_KEY] ?? 0) === targetCount) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        [FUWAMOKO_EFFECT_KEY]: targetCount,
+      };
+    });
+  }, [mode, hifVariant]);
+
+  useEffect(() => {
+    const isFuwamokoDa4Mode =
+      mode === "hif" && hifVariant === FUWAMOKO_HIF_VARIANT_KEY;
+
+    const wasFuwamokoDa4Mode = wasFuwamokoDa4ModeRef.current;
+
+    if (wasFuwamokoDa4Mode && !isFuwamokoDa4Mode) {
+      setSpecialItemEffectCounts((prev) => {
+        if (Number(prev?.[FUWAMOKO_EFFECT_KEY] ?? 0) === 0) {
+          return prev;
+        }
+
+        return {
+          ...prev,
+          [FUWAMOKO_EFFECT_KEY]: 0,
+        };
+      });
+    }
+
+    wasFuwamokoDa4ModeRef.current = isFuwamokoDa4Mode;
+  }, [mode, hifVariant]);
+
   const displayContext = useMemo(() => {
     const baseContext =
       contextPresets[effectiveMode]
@@ -396,16 +606,10 @@ function App() {
       return baseContext;
     }
 
-    const contextWithHifVariant =
-      hifVariant === "manual"
-        ? {
-          ...baseContext,
-          ...hifManualContextOverrides,
-        }
-        : {
-          ...baseContext,
-          ...(HIF_VARIANTS[hifVariant]?.contextOverrides ?? {}),
-        };
+    const contextWithHifVariant = {
+      ...baseContext,
+      ...(HIF_VARIANTS[hifVariant]?.contextOverrides ?? {}),
+    };
 
     return applyHifExamParamsToContext({
       context: contextWithHifVariant,
@@ -420,7 +624,6 @@ function App() {
     hifVariant,
     hifExamRatioPreset,
     hifManualExamRatio,
-    hifManualContextOverrides,
   ]);
 
   function updateOwnedCard(cardId, key, value) {
@@ -560,6 +763,41 @@ function App() {
     return true;
   }
 
+  function getSpRateParamType(result) {
+    const card = result?.card ?? result;
+    if (!card) return null;
+    if (!hasValidSpRateUp(card, calculationType)) return null;
+    if (getSpRate(result) <= 0) return null;
+
+    return card.param_type;
+  }
+
+  function satisfiesSpCardConditions(team, spCardConditions) {
+    const conditions = spCardConditions ?? createDefaultManualSpCardConditions();
+
+    const spResults = team.filter((result) =>
+      hasValidSpRateUp(result.card, calculationType)
+    );
+
+    const totalSpCount = spResults.length;
+    const voSpCount = spResults.filter(
+      (result) => result.card.param_type === "Vo"
+    ).length;
+    const daSpCount = spResults.filter(
+      (result) => result.card.param_type === "Da"
+    ).length;
+    const viSpCount = spResults.filter(
+      (result) => result.card.param_type === "Vi"
+    ).length;
+
+    return (
+      totalSpCount >= Number(conditions.total ?? 0) &&
+      voSpCount >= Number(conditions.vo ?? 0) &&
+      daSpCount >= Number(conditions.da ?? 0) &&
+      viSpCount >= Number(conditions.vi ?? 0)
+    );
+  }
+
   function formatScore(score) {
     return Number(score ?? 0).toFixed(1);
   }
@@ -577,6 +815,30 @@ function App() {
     const counts = PATTERN_COUNTS[patternName];
 
     return Object.fromEntries(types.map((t, index) => [t, counts[index]]));
+  }
+
+  function createManualDeckPatternEntry(manualDeckPattern) {
+    const vo = Number(manualDeckPattern?.vo ?? 0);
+    const da = Number(manualDeckPattern?.da ?? 0);
+    const vi = Number(manualDeckPattern?.vi ?? 0);
+
+    return {
+      patternName: `${vo}/${da}/${vi}`,
+      patternOverride: {
+        Vo: vo,
+        Da: da,
+        Vi: vi,
+      },
+      patternKind: "manualHif",
+    };
+  }
+
+  function isValidManualDeckPattern(manualDeckPattern) {
+    const vo = Number(manualDeckPattern?.vo ?? 0);
+    const da = Number(manualDeckPattern?.da ?? 0);
+    const vi = Number(manualDeckPattern?.vi ?? 0);
+
+    return vo + da + vi === 6;
   }
 
   function combinations(array, count) {
@@ -614,7 +876,7 @@ function App() {
   function limitCandidatesByType(
     results,
     limit,
-    { requireDaSp = false, daSpExtraLimit = 4, synergyExtraLimit = 4 } = {}
+    { spExtraLimit = 4, synergyExtraLimit = 4 } = {}
   ) {
     const sorted = [...results].sort((a, b) => b.score - a.score);
 
@@ -628,9 +890,9 @@ function App() {
       .filter((result) => result.card.synergy_tags?.includes("p_item_gain"))
       .slice(0, synergyExtraLimit);
 
-    const daSpCandidates = requireDaSp
-      ? sorted.filter(isDaSpCard).slice(0, daSpExtraLimit)
-      : [];
+    const spCandidates = sorted
+      .filter((result) => getSpRate(result) > 0)
+      .slice(0, spExtraLimit);
 
     const merged = [];
 
@@ -638,7 +900,7 @@ function App() {
       ...topCandidates,
       ...ssrGainCandidates,
       ...pItemGainCandidates,
-      ...daSpCandidates,
+      ...spCandidates,
     ]) {
       const alreadyExists = merged.some(
         (result) => result.card.card_id === candidate.card.card_id
@@ -656,8 +918,7 @@ function App() {
     ownedResults,
     rentalResult,
     pattern,
-    minSpCards,
-    minDaSpCards,
+    spCardConditions,
     trend,
     abilityDb,
     calculationContext,
@@ -703,32 +964,19 @@ function App() {
           ),
           CANDIDATE_LIMIT_PER_TYPE,
           {
-            requireDaSp: minDaSpCards > 0 && cardType === "Da",
-            daSpExtraLimit: 4,
+            spExtraLimit: 4,
             synergyExtraLimit: 3,
           }
-        ),
+        )
       ])
     );
 
-    const rentalDaSpCount = rentalResult && isDaSpCard(rentalResult) ? 1 : 0;
-    const requiredOwnedDaSpCount = Math.max(0, minDaSpCards - rentalDaSpCount);
-
-    const choices = TYPE_ORDER.map((cardType) => {
-      const comboList = combinations(
+    const choices = TYPE_ORDER.map((cardType) =>
+      combinations(
         groups[cardType],
         remainingPattern[cardType] ?? 0
-      );
-
-      if (cardType !== "Da" || requiredOwnedDaSpCount <= 0) {
-        return comboList;
-      }
-
-      return comboList.filter((combo) => {
-        const daSpCount = combo.filter(isDaSpCard).length;
-        return daSpCount >= requiredOwnedDaSpCount;
-      });
-    });
+      )
+    );
 
     let bestResult = null;
     let bestTotalScore = -Infinity;
@@ -738,18 +986,7 @@ function App() {
         for (const viGroup of choices[2]) {
           const ownTeam = [...forcedResults, ...voGroup, ...daGroup, ...viGroup];
           const team = rentalResult ? [...ownTeam, rentalResult] : ownTeam;
-
-          const spCardCount = team.filter((result) =>
-            hasValidSpRateUp(result.card, trend)
-          ).length;
-
-          if (spCardCount < minSpCards) {
-            continue;
-          }
-
-          const daSpCardCount = team.filter(isDaSpCard).length;
-
-          if (daSpCardCount < minDaSpCards) {
+          if (!satisfiesSpCardConditions(team, spCardConditions)) {
             continue;
           }
 
@@ -968,15 +1205,15 @@ function App() {
     ownedResults,
     rentalResults,
     patternName,
-    minSpCards,
-    minDaSpCards,
+    patternOverride = null,
+    spCardConditions,
     trend,
     abilityDb,
     calculationContext,
     forcedCardIds = [],
   }) {
 
-    const pattern = makeTypePattern(trend, patternName);
+    const pattern = patternOverride ?? makeTypePattern(trend, patternName);
 
     let bestResult = {
       cards: [],
@@ -1011,23 +1248,9 @@ function App() {
           ownedResult.card.card_id !== rentalResult.card.card_id
       );
 
-      const rentalSpCount = hasValidSpRateUp(rentalResult.card, trend) ? 1 : 0;
+      const availableTeam = [...ownCandidates, rentalResult];
 
-      const availableSpCount =
-        ownCandidates.filter((result) =>
-          hasValidSpRateUp(result.card, trend)
-        ).length + rentalSpCount;
-
-      if (availableSpCount < minSpCards) {
-        continue;
-      }
-
-      const rentalDaSpCount = isDaSpCard(rentalResult) ? 1 : 0;
-
-      const availableDaSpCount =
-        ownCandidates.filter(isDaSpCard).length + rentalDaSpCount;
-
-      if (availableDaSpCount < minDaSpCards) {
+      if (!satisfiesSpCardConditions(availableTeam, spCardConditions)) {
         continue;
       }
 
@@ -1035,8 +1258,7 @@ function App() {
         ownedResults: ownCandidates,
         rentalResult,
         pattern: remainingPattern,
-        minSpCards,
-        minDaSpCards,
+        spCardConditions,
         trend,
         abilityDb,
         calculationContext,
@@ -1083,13 +1305,27 @@ function App() {
       calculationSettings?.specialItemEffectCounts ??
       createDefaultSpecialItemEffectCounts();
 
-
     const calculationGeneralEffectCounts =
       calculationSettings?.generalEffectCounts ??
       createDefaultGeneralEffectCounts();
 
     const calculationIsSpecialItemEffectEnabled =
       calculationSettings?.isSpecialItemEffectEnabled ?? false;
+
+    const calculationHifVariant =
+      calculationSettings?.hifVariant ?? "standard";
+
+    const calculationHifManualDeckPattern =
+      calculationSettings?.hifManualDeckPattern ??
+      createDefaultManualDeckPattern();
+
+    const isHifManualVariant =
+      calculationEffectiveMode === "hif" &&
+      calculationHifVariant === "manual";
+
+    const isFuwamokoDa4Mode =
+      calculationEffectiveMode === "hif" &&
+      calculationHifVariant === FUWAMOKO_HIF_VARIANT_KEY;
 
     const activeSpecialItemEffects = Object.entries(SPECIAL_ITEM_EFFECTS).filter(
       ([effectKey, effect]) => {
@@ -1115,19 +1351,21 @@ function App() {
       }
     );
 
-    const scenarios = [
-      {
+    const scenarios = [];
+
+    if (!isFuwamokoDa4Mode) {
+      scenarios.push({
         scenarioKey: "normal",
         scenarioLabel: "通常編成",
         context: calculationContext,
         ownedResults: ownedCardResults,
         rentalResults: rentalCardResults,
         forcedCardIds: calculationFixedCardIds,
-      },
-    ];
+      });
+    }
 
     if (
-      calculationIsSpecialItemEffectEnabled &&
+      (calculationIsSpecialItemEffectEnabled || isFuwamokoDa4Mode) &&
       (activeSpecialItemEffects.length > 0 || hasActiveGeneralEffects)
     ) {
       let adjustedContext = applySpecialItemEffects(
@@ -1166,14 +1404,59 @@ function App() {
       });
     }
 
-    return scenarios.flatMap((scenario) =>
-      Object.keys(PATTERN_COUNTS).map((patternName) => {
+    return scenarios.flatMap((scenario) => {
+      const normalPatternEntries = Object.keys(PATTERN_COUNTS).map((patternName) => ({
+        patternName,
+        patternOverride: null,
+        patternKind: "normal",
+      }));
+
+      const shouldUseOnlyHifDa4Patterns =
+        calculationEffectiveMode === "hif" &&
+        calculationHifVariant === FUWAMOKO_HIF_VARIANT_KEY &&
+        (calculationType === "voda" || calculationType === "davi");
+
+      const shouldAddHifDa4Patterns =
+        calculationEffectiveMode === "hif" &&
+        (calculationType === "voda" || calculationType === "davi");
+
+      const hifDa4PatternEntries = shouldAddHifDa4Patterns
+        ? SPECIAL_HIF_DA4_PATTERNS[calculationType].map((patternConfig) => ({
+          patternName: patternConfig.patternName,
+          patternOverride: patternConfig.pattern,
+          patternKind: "hifDa4",
+        }))
+        : [];
+
+      const manualHifPatternEntries =
+        isHifManualVariant &&
+          !calculationHifManualDeckPattern.useNormalPatterns &&
+          isValidManualDeckPattern(calculationHifManualDeckPattern)
+          ? [createManualDeckPatternEntry(calculationHifManualDeckPattern)]
+          : [];
+
+      let patternEntries = [];
+
+      if (isHifManualVariant) {
+        patternEntries = calculationHifManualDeckPattern.useNormalPatterns
+          ? normalPatternEntries
+          : manualHifPatternEntries;
+      } else if (shouldUseOnlyHifDa4Patterns) {
+        patternEntries = hifDa4PatternEntries;
+      } else {
+        patternEntries = [
+          ...normalPatternEntries,
+          ...hifDa4PatternEntries,
+        ];
+      }
+
+      return patternEntries.map(({ patternName, patternOverride, patternKind }) => {
         const result = selectRecommendedCardsWithRentalAndPattern({
           ownedResults: scenario.ownedResults,
           rentalResults: scenario.rentalResults,
           patternName,
-          minSpCards: calculationMinSpCards,
-          minDaSpCards,
+          patternOverride,
+          spCardConditions: calculationSpCardConditions,
           trend: calculationType,
           abilityDb,
           calculationContext: scenario.context,
@@ -1184,17 +1467,24 @@ function App() {
           scenarioKey: scenario.scenarioKey,
           scenarioLabel: scenario.scenarioLabel,
           patternName,
+          patternKey:
+            patternKind === "hifDa4"
+              ? `hif-da4-${calculationType}-${patternName}`
+              : patternKind === "manualHif"
+                ? `manual-hif-${patternName}`
+                : `normal-${patternName}`,
           cards: result.cards,
           baseScore: result.baseScore,
           synergyScore: result.synergyScore,
           totalScore: result.totalScore,
         };
-      })
-    );
+      });
+    });
   }, [
     showResult,
     calculationOwnedCards,
     calculationSettings,
+    calculationEffectiveMode,
     calculationContext,
     ownedCardResults,
     rentalCardResults,
@@ -1256,7 +1546,7 @@ function App() {
               alt="サポカ計算機"
             />
             <h1 className="mainTitle">サポカ計算機</h1>
-            <span className="version">v1.1.1 - ドリンク獲得のプリセットの調整</span>
+            <span className="version">v1.1.1 - HIF関連の設定を追加・調整しました</span>
             <p className="appDescription">
               所持サポカからおすすめ上位6枚を自動計算します。
             </p>
@@ -1275,12 +1565,20 @@ function App() {
 
                 <h2>更新履歴</h2>
 
-               <p><strong>v1.1.1</strong></p>
+                <p><strong>v1.1.1</strong></p>
                 <span className="versionDate"> - 2026/05/18</span>
                 <p className="changelogNote">サイトに以下の機能を追加しました：</p>
                 <ul>
-                  <li>ドリンク獲得のプリセットを微調整しました</li>
+                  <li>プレイ方針プリセットに"Da4枚ふわもこ軸"を追加しました</li>
+                  <li>計算条件の手動設定でサポカの編成枚数を調整できるようにしました</li>
+                  <li>SP率サポカの最低枚数の手動で設定できるようにしました</li>
+                </ul>
+                <p className="changelogNote">以下の機能・動作・表示を改善しました：</p>
+                <ul>
+                  <li>各プリセットを微調整しました</li>
+                  <p>主にPドリンク交換回数とカスタム回数を見直しています。</p>
                   <li>"ふわふわでもこもこ"の最大発動回数を8回にしました</li>
+                  <li>「ぜったい追いついてやる！」の表記揺れを修正しました</li>
                 </ul>
                 <p className="subText">
                   ※HIF編の計算条件は仮設定であり、順次調整する予定です。
@@ -1294,21 +1592,19 @@ function App() {
                 <ul>
                   <li>新モード「HIF」に対応しました</li>
                   <li>強化月間ON/OFFに対応したモード切り替えUIを追加しました</li>
-                </ul>
-
-                <p className="changelogNote">以下の表示を改善しました：</p>
-                <ul>
                   <li>計算条件を手動で設定できるようになりました</li>
                   <li>一部のPアイテムの補正回数を設定できるようにしました</li>
-                  <li>確定で編成するサポカを選択できるようになりました</li>
+                  <li>確定で編成するサポカを選択できるようにしました</li>
+                </ul>
+
+                <p className="changelogNote">以下の機能・動作・表示を改善しました：</p>
+                <ul>
                   <li>おすすめ編成をスコアが高い順に並べるようにしました</li>
                   <li>Vo / Da / Vi のタイプ表示に色を付け、視認性を改善しました</li>
                   <li>おすすめ編成テーブルの横幅を調整し、スマホで見やすくしました</li>
                   <li>PC版の表示幅を調整しました</li>
                   <li>ヘッダー画像を変更しました</li>
                 </ul>
-
-
 
                 <p><strong>v1.0.4</strong></p>
                 <span className="versionDate"> - 2026/05/07</span>
@@ -1378,7 +1674,6 @@ function App() {
                 </p>
 
                 <ul className="statusList">
-
                   <li>
                     <p className="statusTitle">
                       「あなたとふたり、電車で」の点数が想定より低くおすすめされづらい
@@ -1435,7 +1730,7 @@ function App() {
                   <p className="subText">入力したサポカの情報は、端末ごとに自動保存されます。</p>
                 </div>
 
-                <h3>4. おすすめ編成の選出について 🧮</h3>
+                <h3>3. おすすめ編成の選出について 🧮</h3>
                 <div className="usageTextBlock">
                   <p>
                     おすすめ編成は、サポカ単体の点数順ではなく、編成全体の合計点が高くなるように選出しています。
@@ -1518,30 +1813,152 @@ function App() {
           </label>
 
           {mode === "hif" && (
-            <label>
-              プレイ方針
-              <select
-                className="selectBox"
-                value={hifVariant}
-                onChange={(e) => setHifVariant(e.target.value)}
-              >
-                {Object.entries(HIF_VARIANTS).map(([variantKey, variant]) => (
-                  <option key={variantKey} value={variantKey}>
-                    {variant.label}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <div className="hifVariantBox">
+              <label>
+                プレイ方針
+                <select
+                  className="selectBox"
+                  value={hifVariant}
+                  onChange={(e) => setHifVariant(e.target.value)}
+                >
+                  {Object.entries(HIF_VARIANTS).map(([variantKey, variant]) => (
+                    <option key={variantKey} value={variantKey}>
+                      {variant.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              {HIF_VARIANTS[hifVariant]?.description && (
+                <div className="infoNotice hifVariantDescriptionBox">
+                  <p className="hifVariantDescriptionText">
+                    {HIF_VARIANTS[hifVariant].description}
+                  </p>
+                </div>
+              )}
+            </div>
           )}
 
           {mode === "hif" && hifVariant === "manual" && (
             <details className="manualHifContextBox" open>
-              <summary>HIF計算条件を手動調整</summary>
+              <summary>HIFの計算条件を手動調整</summary>
 
               <p className="subText">
                 HIF標準値をもとに、各発動回数や獲得数を手動で上書きします。
                 試験パラメータ分は下の「試験パラメータ比率」で別途加算されます。
               </p>
+              {mode === "hif" && hifVariant === "manual" && (
+                <div className="manualHifDeckPatternBox">
+                  <div className="sectionTitle">サポカ編成パターンを手動で設定</div>
+
+                  <label className="enhancedModeToggle">
+                    <input
+                      className="enhancedModeCheckbox"
+                      type="checkbox"
+                      checked={!hifManualDeckPattern.useNormalPatterns}
+                      onChange={(e) =>
+                        setHifManualDeckPattern((prev) => ({
+                          ...prev,
+                          useNormalPatterns: !e.target.checked,
+                        }))
+                      }
+                    />
+                    <span className="enhancedModeLabel">
+                      サポカ枚数を直接指定する
+                    </span>
+                  </label>
+
+                  {hifManualDeckPattern.useNormalPatterns ? (
+                    <p className="subText">
+                      3/3/0・3/2/1・2/3/1・2/2/2 の通常パターンで計算します。
+                    </p>
+                  ) : (
+                    <>
+                      <p className="subText">
+                        Vo / Da / Vi のサポカ枚数を直接指定します。合計が6枚になるようにしてください。
+                      </p>
+
+                      <div className="manualDeckPatternGrid">
+                        <label>
+                          Voサポカの枚数
+                          <select
+                            className="selectBox"
+                            value={hifManualDeckPattern.vo}
+                            onChange={(e) =>
+                              setHifManualDeckPattern((prev) => ({
+                                ...prev,
+                                vo: Number(e.target.value),
+                              }))
+                            }
+                          >
+                            {[0, 1, 2, 3, 4, 5, 6].map((count) => (
+                              <option key={count} value={count}>
+                                {count}枚
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+
+                        <label>
+                          Daサポカの枚数
+                          <select
+                            className="selectBox"
+                            value={hifManualDeckPattern.da}
+                            onChange={(e) =>
+                              setHifManualDeckPattern((prev) => ({
+                                ...prev,
+                                da: Number(e.target.value),
+                              }))
+                            }
+                          >
+                            {[0, 1, 2, 3, 4, 5, 6].map((count) => (
+                              <option key={count} value={count}>
+                                {count}枚
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+
+                        <label>
+                          Viサポカの枚数
+                          <select
+                            className="selectBox"
+                            value={hifManualDeckPattern.vi}
+                            onChange={(e) =>
+                              setHifManualDeckPattern((prev) => ({
+                                ...prev,
+                                vi: Number(e.target.value),
+                              }))
+                            }
+                          >
+                            {[0, 1, 2, 3, 4, 5, 6].map((count) => (
+                              <option key={count} value={count}>
+                                {count}枚
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                      </div>
+
+                      <p
+                        className={
+                          isValidManualDeckPattern(hifManualDeckPattern)
+                            ? "subText"
+                            : "warningText"
+                        }
+                      >
+                        現在の合計：{" "}
+                        {Number(hifManualDeckPattern.vo ?? 0) +
+                          Number(hifManualDeckPattern.da ?? 0) +
+                          Number(hifManualDeckPattern.vi ?? 0)}
+                        枚
+                        {!isValidManualDeckPattern(hifManualDeckPattern) &&
+                          "（合計6枚になるように設定してください）"}
+                      </p>
+                    </>
+                  )}
+                </div>
+              )}
 
               <div className="manualHifContextGrid">
                 {Object.entries(
@@ -1553,12 +1970,39 @@ function App() {
                       type="number"
                       min="0"
                       value={hifManualContextOverrides[contextKey] ?? baseValue}
-                      onChange={(e) =>
-                        setHifManualContextOverrides((prev) => ({
-                          ...prev,
-                          [contextKey]: Number(e.target.value),
-                        }))
-                      }
+                      onChange={(e) => {
+                        const nextValue = Number(e.target.value);
+
+                        setHifManualContextOverrides((prev) => {
+                          const next = {
+                            ...prev,
+                            [contextKey]: nextValue,
+                          };
+
+                          const baseContext =
+                            contextPresets.hif.plans[plan].types[type].context;
+
+                          const getCurrentValue = (key) =>
+                            Number(next[key] ?? baseContext[key] ?? 0);
+
+                          const totalLessonKey = SP_TO_TOTAL_LESSON_COUNT_KEY[contextKey];
+                          const spLessonKey = TOTAL_TO_SP_LESSON_COUNT_KEY[contextKey];
+
+                          if (totalLessonKey) {
+                            next[totalLessonKey] = nextValue;
+                          }
+
+                          if (spLessonKey) {
+                            const currentSpLessonCount = getCurrentValue(spLessonKey);
+
+                            if (nextValue < currentSpLessonCount) {
+                              next[contextKey] = currentSpLessonCount;
+                            }
+                          }
+
+                          return next;
+                        });
+                      }}
                     />
                   </label>
                 ))}
@@ -1668,7 +2112,7 @@ function App() {
           <label>
             傾向
             <select value={type} onChange={(e) => setType(e.target.value)}>
-              {Object.keys(contextPresets[effectiveMode].plans[plan].types).map((t) => (
+              {availableTypesForCurrentSelection.map((t) => (
                 <option key={t} value={t}>
                   {contextPresets[effectiveMode].plans[plan].types[t].label}
                 </option>
@@ -1703,31 +2147,125 @@ function App() {
 
           <label>
             SP率サポカの最低枚数
-            <select className="selectBox"
+            <select
+              className="selectBox"
               value={minSpCards}
-              onChange={(e) => setMinSpCards(Number(e.target.value))}
+              onChange={(e) => {
+                const value = e.target.value;
+
+                if (value === SP_MIN_MANUAL_VALUE) {
+                  setMinSpCards(SP_MIN_MANUAL_VALUE);
+                  setManualSpCardConditions(
+                    createDefaultManualSpCardConditionsForTrend(type)
+                  );
+                  return;
+                }
+
+                setMinSpCards(Number(value));
+              }}
             >
               <option value={0}>0枚以上</option>
               <option value={1}>1枚以上</option>
               <option value={2}>2枚以上</option>
               <option value={3}>3枚以上</option>
+              <option value={SP_MIN_MANUAL_VALUE}>手動設定</option>
             </select>
           </label>
 
-          {shouldShowSpTypePriority && (
-            <>
-              <label>
-                SPタイプ優先
-              </label>
-              <select
-                className="selectBox"
-                value={spTypePriority}
-                onChange={(e) => setSpTypePriority(e.target.value)}
-              >
-                <option value="none">指定なし</option>
-                <option value="da2">DaSPを2枚以上</option>
-              </select>
-            </>
+          {minSpCards === SP_MIN_MANUAL_VALUE && (
+            <div className="manualSpConditionBox">
+              <p className="subText">
+                編成に入れるSP率サポカの最低枚数を、合計・タイプ別に指定します。
+              </p>
+
+              <div className="manualSpConditionGrid">
+                <label>
+                  合計
+                  <select
+                    className="selectBox"
+                    value={manualSpCardConditions.total}
+                    onChange={(e) =>
+                      setManualSpCardConditions((prev) => ({
+                        ...prev,
+                        total: Number(e.target.value),
+                      }))
+                    }
+                  >
+                    {[0, 1, 2, 3, 4, 5, 6].map((count) => (
+                      <option key={count} value={count}>
+                        {count}枚以上
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                {validManualSpTypes.includes("Vo") && (
+                  <label>
+                    VoSP
+                    <select
+                      className="selectBox"
+                      value={manualSpCardConditions.vo}
+                      onChange={(e) =>
+                        setManualSpCardConditions((prev) => ({
+                          ...prev,
+                          vo: Number(e.target.value),
+                        }))
+                      }
+                    >
+                      {[0, 1, 2, 3, 4, 5, 6].map((count) => (
+                        <option key={count} value={count}>
+                          {count}枚以上
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                )}
+
+                {validManualSpTypes.includes("Da") && (
+                  <label>
+                    DaSP
+                    <select
+                      className="selectBox"
+                      value={manualSpCardConditions.da}
+                      onChange={(e) =>
+                        setManualSpCardConditions((prev) => ({
+                          ...prev,
+                          da: Number(e.target.value),
+                        }))
+                      }
+                    >
+                      {[0, 1, 2, 3, 4, 5, 6].map((count) => (
+                        <option key={count} value={count}>
+                          {count}枚以上
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                )}
+
+                {validManualSpTypes.includes("Vi") && (
+                  <label>
+                    ViSP
+                    <select
+                      className="selectBox"
+                      value={manualSpCardConditions.vi}
+                      onChange={(e) =>
+                        setManualSpCardConditions((prev) => ({
+                          ...prev,
+                          vi: Number(e.target.value),
+                        }))
+                      }
+                    >
+                      {[0, 1, 2, 3, 4, 5, 6].map((count) => (
+                        <option key={count} value={count}>
+                          {count}枚以上
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                )}
+              </div>
+            </div>
           )}
 
           <div className="fixedCardBox">
@@ -1847,19 +2385,16 @@ function App() {
                     <li>
                       <strong>ONにすると、通常編成と補正あり編成を比較します。</strong>
                       <br />
-                      OFFのままでは、回数を設定していても計算には反映されません。
+                      OFFの場合、回数を設定していても計算には反映されません。
                     </li>
 
                     <li>
                       <strong>回数は「そのPアイテム効果を何回発動させるか」です。</strong>
-                      <br />
-                      平均からの差分ではなく、指定した回数分をそのまま計算します。
                     </li>
 
                     <li>
                       <strong>所持していないサポカのPアイテムは表示されません。</strong>
                       <br />
-                      所持サポカ登録で対象サポカを所持済みにすると表示されます。
                     </li>
 
                     <li>
@@ -1870,6 +2405,8 @@ function App() {
                       「ふわふわでもこもこ」は、そのサポカを編成に入れる前提の固有補正です。
                       <br />
                       「ドリンク獲得追加」は、サポカを固定しない共通補正です。
+                      <br />
+                      もしサポカを固定したい場合は、「確定編成サポカ」を併用して設定してください。
                     </li>
                   </ol>
                 </div>
@@ -1973,7 +2510,10 @@ function App() {
                 plan,
                 type,
                 minSpCards,
-                spTypePriority,
+                manualSpCardConditions: normalizeManualSpCardConditionsForTrend(
+                  manualSpCardConditions,
+                  type
+                ),
                 isEnhancedMode,
                 hifVariant,
                 hifExamRatioPreset,
@@ -1983,6 +2523,7 @@ function App() {
                 generalEffectCounts,
                 fixedCardIds,
                 hifManualContextOverrides,
+                hifManualDeckPattern,
               });
               setShowResult(true);
             }}
@@ -2012,7 +2553,7 @@ function App() {
                   <h2>おすすめ編成</h2>
                   {sortedRecommendedPatternResults.map((patternResult, index) => (
                     <div
-                      key={`${patternResult.scenarioKey ?? "normal"}-${patternResult.patternName}`}
+                      key={`${patternResult.scenarioKey ?? "normal"}-${patternResult.patternKey ?? patternResult.patternName}`}
                       className="resultBlock"
                     >
                       <h3>

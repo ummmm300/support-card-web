@@ -1252,3 +1252,107 @@ body.darkModeBody #root {
   cursor: pointer;
   font-weight: 700;
 }
+
+.hifVariantBox {
+  margin-top: 8px;
+}
+
+.infoNotice {
+  margin-top: 10px;
+  padding: 12px 14px;
+  border-left: 4px solid #7b4cc9;
+  border-radius: 8px;
+  background: rgba(123, 76, 201, 0.08);
+}
+
+.hifVariantDescriptionBox {
+  line-height: 1.7;
+}
+
+.hifVariantDescriptionText {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--text-color);
+}
+
+.manualSpConditionBox {
+  margin-top: 10px;
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--card-bg);
+}
+
+.manualSpConditionGrid {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+.manualSpConditionGrid label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.manualRatioInputs {
+  margin-top: 8px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.manualRatioInputs label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.manualRatioInputs input,
+.manualRatioInputs select {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.manualHifDeckPatternBox {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border: 1px solid var(--border-color);
+  border-left: 4px solid #7b4cc9;
+  border-radius: 10px;
+  background: rgba(123, 76, 201, 0.08);
+}
+
+.manualDeckPatternGrid {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.manualDeckPatternGrid label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.warningText {
+  margin-top: 8px;
+  color: #c0392b;
+  font-weight: 700;
+}
+
+@media (max-width: 600px) {
+  .manualSpConditionGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .manualSpConditionGrid label {
+    width: 100%;
+  }
+
+  .manualSpConditionGrid select {
+    width: 100%;
+  }
+}

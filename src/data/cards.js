@@ -1358,7 +1358,7 @@ export const cards = [
   },
   {
     "card_id": "card_060",
-    "name": "絶対追いついてやる！",
+    "name": "ぜったい追いついてやる！",
     "rarity": "SSR",
     "ability_tier": "SSR",
     "param_type": "Vi",
@@ -1737,7 +1737,7 @@ export const cards = [
     "rental_candidate": 0,
     "abilities": [
       "param_bonus_da_id",
-      "sp_rate_id",
+      "none_id",
       "on_rest_id",
       "on_outing_id",
       "on_param_event_id",

@@ -1756,8 +1756,10 @@ export const HIF_VARIANTS = {
         label: "差し入れドリンク軸（花ロボ：黄）",
         description: "差し入れ・ドリンク獲得を多めに見る設定",
         contextOverrides: {
+            supply_count: 5,
+            outing_count: 1,
             get_drink_count: 24,
-            drink_exchange_count: 8, 
+            drink_exchange_count: 8,
         },
     },
 
@@ -1765,9 +1767,9 @@ export const HIF_VARIANTS = {
         label: "相談ドリンク交換軸（花もじゃ：黄）",
         description: "ドリンク交換を多めに見る設定",
         contextOverrides: {
-            consult_count: 3, 
-            special_training_count: 0, 
-            customize_count: 2, 
+            consult_count: 3,
+            special_training_count: 0,
+            customize_count: 1,
             get_drink_count: 20,
             drink_exchange_count: 16,
         },
@@ -1785,6 +1787,22 @@ export const HIF_VARIANTS = {
             enhance_m_count: 11,
         },
     },
+
+    fuwamokoDa4: {
+        label: "Da4枚ふわもこ軸（花ロボ：黄）",
+        description:
+            "ふわもこ採用でDaSPを8回踏む、Daサポカ4枚編成向けの設定です。必要に応じてSP率条件を手動設定してください。",
+        contextOverrides: {
+            sp_vo_count: 0,
+            sp_da_count: 8,
+            sp_vi_count: 0,
+            supply_count: 5,
+            outing_count: 1,
+            get_drink_count: 24,
+            drink_exchange_count: 8,
+        },
+    },
+
     manual: {
         label: "手動調整",
         description: "HIFの各計算条件を手動で指定する設定",

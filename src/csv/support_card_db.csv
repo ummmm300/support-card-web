@@ -58,7 +58,7 @@ card_056,あったかいね,SSR,SSR,28,Vi,0,1,0,flat_vi_id,sp_rate_id,get_mental
 card_057,キラキラして綺麗～っ！,SSR,SSR,0,Da,1,0,0,param_bonus_da_id,on_consult_id,on_sp_da_id,on_exam_end_id,on_param_event_id,none_id,,1,,ssr_gain
 card_058,さみだれ,SSR,SR,0,Vi,0,0,1,param_bonus_vi_ssr_id,none_id,on_enhance_M_id,on_sp_vi_id,on_param_event_ssr_id,none_id,,1,,ssr_gain
 card_059,プロデュースって大変ね,SSR,SR,21,Da,0,0,1,param_bonus_vi_ssr_id,sp_rate_id,on_exam_end_id,none_id,on_param_event_ssr_id,none_id,,1,SP,p_item_gain
-card_060,絶対追いついてやる！,SSR,SSR,0,Vi,1,1,1,param_bonus_vi_id,on_class_id,on_enhance_id,on_sp_vi_id,on_param_event_id,none_id,,1,,ssr_gain
+card_060,ぜったい追いついてやる！,SSR,SSR,0,Vi,1,1,1,param_bonus_vi_id,on_class_id,on_enhance_id,on_sp_vi_id,on_param_event_id,none_id,,1,,ssr_gain
 card_061,そろそろ焼けたかな？,SSR,SSR,28,Da,0,1,0,flat_da_id,sp_rate_id,on_sp_da_id,on_supply_id,on_param_event_id,none_id,1,1,SP,ssr_gain
 card_062,会長、準備は万端です,SSR,SSR,0,Vi,0,1,0,param_bonus_vi_id,none_id,on_enhance_M_id,on_outing_id,on_param_event_id,none_id,,1,,p_item_gain
 card_063,すっかり秋色ですわね！,SSR,SSR,28,Vo,1,0,0,flat_vo_id,sp_rate_id,get_buff_id,on_supply_id,on_param_event_id,none_id,1,1,SP,p_item_gain
@@ -74,7 +74,7 @@ card_072,夏を楽しみましょう！,SSR,SSR,0,Vo,1,0,0,param_bonus_vo_id,non
 card_073,一時休戦です,SSR,SSR,0,Vo,1,0,0,param_bonus_vo_id,none_id,on_sp_vo_id,on_supply_id,on_param_event_id,none_id,,1,,ssr_gain
 card_074,もうっ！　冷たいよ！,SSR,SSR,28,Da,0,1,0,flat_da_id,sp_rate_id,on_sp_da_id,on_exam_end_id,on_param_event_id,none_id,,1,SP,p_item_gain
 card_075,「ア」じゃなくて「エ」！,SSR,SSR,28,Vi,0,1,0,flat_vi_id,sp_rate_id,on_lesson_vi_id,get_mental_id,on_param_event_id,none_id,,1,SP,ssr_gain
-card_076,晴れたね,SSR,SSR,0,Da,1,1,1,param_bonus_da_id,sp_rate_id,on_rest_id,on_outing_id,on_param_event_id,none_id,,1,,p_item_gain
+card_076,晴れたね,SSR,SSR,0,Da,1,1,1,param_bonus_da_id,none_id,on_rest_id,on_outing_id,on_param_event_id,none_id,,1,,p_item_gain
 card_077,まだ上がりませんように,SSR,SSR,0,Vo,0,1,0,param_bonus_vo_id,none_id,on_sp_vo_id,on_enhance_M_id,on_param_event_id,none_id,,1,,ssr_gain
 card_078,何やってるんだろう、,SSR,SSR,28,Vo,1,1,1,flat_vo_id,sp_rate_id,on_lesson_vo_id,on_enhance_id,on_param_event_id,none_id,,1,SP,p_item_gain
 card_079,第2回教室パーティー！,SSR,SR,0,Vi,1,1,1,flat_vi_ssr_id,none_id,on_sp_vi_id,on_exam_end_id,on_param_event_ssr_id,none_id,,1,SP,ssr_gain
