@@ -595,6 +595,19 @@ function App() {
     wasFuwamokoDa4ModeRef.current = isFuwamokoDa4Mode;
   }, [mode, hifVariant]);
 
+  useEffect(() => {
+    if (mode !== "hif") return;
+
+    if (hifVariant === "fuwamokoDa4") {
+      setHifExamRatioPreset("fuwamokoVoVi");
+      return;
+    }
+
+    setHifExamRatioPreset((prev) =>
+      prev === "fuwamokoVoVi" ? "trendPair" : prev
+    );
+  }, [mode, hifVariant]);
+
   const displayContext = useMemo(() => {
     const baseContext =
       contextPresets[effectiveMode]
@@ -2030,6 +2043,14 @@ function App() {
                 {Object.entries(HIF_EXAM_RATIO_PRESETS)
                   .filter(([presetKey, preset]) => {
                     if (presetKey === "manual") return true;
+
+                    if (preset.onlyHifVariant) {
+                      return (
+                        hifVariant === preset.onlyHifVariant &&
+                        Boolean(preset.ratiosByType?.[type])
+                      );
+                    }
+
                     return Boolean(preset.ratiosByType?.[type]);
                   })
                   .map(([presetKey, preset]) => (

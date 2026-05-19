@@ -1758,7 +1758,7 @@ export const HIF_VARIANTS = {
         contextOverrides: {
             supply_count: 5,
             outing_count: 1,
-            get_drink_count: 28,
+            get_drink_count: 26,
             drink_exchange_count: 8,
             special_training_count: 0,
             customize_count: 3,
@@ -1795,15 +1795,21 @@ export const HIF_VARIANTS = {
         description:
             "ふわもこ採用でDaSPを8回踏む、Daサポカ4枚編成向けの設定です。必要に応じてSP率条件を手動設定してください。",
         contextOverrides: {
+            param_vo_total: 170,
+            param_da_total: 800,
+            param_vi_total: 170,
             sp_vo_count: 0,
             sp_da_count: 8,
             sp_vi_count: 0,
+            lesson_vo_count: 0,
+            lesson_da_count: 8,
+            lesson_vi_count: 0,
             supply_count: 5,
             outing_count: 1,
             special_training_count: 0,
             customize_count: 1,
-            get_drink_count: 28,
-            drink_exchange_count: 10,
+            get_drink_count: 26,
+            drink_exchange_count: 8,
         },
     },
 
@@ -1853,6 +1859,15 @@ export const HIF_EXAM_RATIO_PRESETS = {
         ratiosByType: {
             vovi: { vo: 3, da: 2, vi: 8 },
             davi: { vo: 2, da: 3, vi: 8 },
+        },
+    },
+
+    fuwamokoVoVi: {
+        label: "VoVi特化（Da溢れ対策）",
+        onlyHifVariant: "fuwamokoDa4",
+        ratiosByType: {
+            voda: { vo: 5, da: 1, vi: 3 },
+            davi: { vo: 3, da: 1, vi: 5 },
         },
     },
 
