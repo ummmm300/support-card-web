@@ -1791,7 +1791,7 @@ function App() {
             className="feedbackButton"
             onClick={() => window.open(feedbackFormUrl, "_blank", "noopener,noreferrer")}
           >
-            要望・不具合報告
+            意見・不具合の報告
           </button>
 
           <button
