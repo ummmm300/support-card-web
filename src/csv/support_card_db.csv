@@ -45,7 +45,7 @@ card_043,相変わらず不器用ね,SSR,SSR,0,Vo,0,1,0,flat_vo_id,get_impressio
 card_044,さあ、もう一戦！,SSR,SR,0,Vo,1,1,1,param_bonus_vo_ssr_id,none_id,get_mental_id,on_sp_vo_id,on_param_event_ssr_id,none_id,,1,,ssr_gain
 card_045,相手にとって不足なしよ！,SSR,SSR,28,Vi,0,0,1,flat_vi_id,sp_rate_id,on_sp_vi_id,on_delete_M_id,on_param_event_id,none_id,,1,SP,ssr_gain
 card_046,ここから始まるんだね！,SSR,SSR,0,Da,1,0,0,param_bonus_da_id,on_delete_id,on_sp_da_id,on_class_id,on_param_event_id,none_id,,1,,p_item_gain
-card_047,ひとりでたてますか？,SSR,SSR,28,Da,1,1,1,flat_da_id,sp_rate_id,on_sp_da_id,get_mental_id,on_param_event_id,none_id,,1,,p_item_gain
+card_047,ひとりで立てますか？,SSR,SSR,28,Da,1,1,1,flat_da_id,sp_rate_id,on_sp_da_id,get_mental_id,on_param_event_id,none_id,,1,,p_item_gain
 card_048,新生活の始まりだね,SSR,SSR,28,Vi,0,0,1,flat_vi_id,sp_rate_id,on_lesson_vi_id,get_reserve_id,on_param_event_id,none_id,,1,Vi15とチェンジ無限、どうするか,p_item_gain
 card_049,あなたたちのことが好き,SSR,SSR,28,Da,0,1,0,flat_da_id,sp_rate_id,on_sp_da_id,on_enhance_M_id,on_param_event_id,none_id,1,1,SP,p_item_gain
 card_050,絶対にお渡ししますわっ！,SSR,SSR,28,Vo,0,1,0,flat_vo_id,sp_rate_id,on_sp_vo_id,on_outing_id,on_param_event_id,none_id,,1,SP,p_item_gain

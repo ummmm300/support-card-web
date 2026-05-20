@@ -1059,7 +1059,7 @@ export const cards = [
   },
   {
     "card_id": "card_047",
-    "name": "ひとりでたてますか？",
+    "name": "ひとりで立てますか？",
     "rarity": "SSR",
     "ability_tier": "SSR",
     "param_type": "Da",
