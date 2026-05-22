@@ -1863,11 +1863,11 @@ export const HIF_EXAM_RATIO_PRESETS = {
     },
 
     fuwamokoVoVi: {
-        label: "VoVi特化（Da溢れ対策）",
+        label: "Vo or Vi特化（Da溢れ対策）",
         onlyHifVariant: "fuwamokoDa4",
         ratiosByType: {
-            voda: { vo: 5, da: 1, vi: 3 },
-            davi: { vo: 3, da: 1, vi: 5 },
+            voda: { vo: 8, da: 1, vi: 1 },
+            davi: { vo: 1, da: 1, vi: 8 },
         },
     },
 
