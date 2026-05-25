@@ -1810,7 +1810,7 @@ export const HIF_VARIANTS = {
                 outing_count: 1,
                 special_training_count: 0,
                 customize_count: 1,
-                get_drink_count: 24,
+                get_drink_count: 26,
                 drink_exchange_count: 12,
             },
 
@@ -1828,7 +1828,7 @@ export const HIF_VARIANTS = {
                 outing_count: 1,
                 special_training_count: 0,
                 customize_count: 1,
-                get_drink_count: 24,
+                get_drink_count: 26,
                 drink_exchange_count: 12,
             },
         },

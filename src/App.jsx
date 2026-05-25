@@ -1673,7 +1673,7 @@ function App() {
               alt="サポカ計算機"
             />
             <h1 className="mainTitle">サポカ計算機</h1>
-            <span className="version">v1.1.1 - HIF関連の設定を追加・調整しました</span>
+            <span className="version">v1.1.2 - レンタル枠固定・おすすめ編成の凸数表示に対応しました</span>
             <p className="appDescription">
               所持サポカからおすすめ上位6枚を自動計算します。
             </p>
@@ -1691,6 +1691,25 @@ function App() {
                 </button>
 
                 <h2>更新履歴</h2>
+                <p><strong>v1.1.2</strong></p>
+                <span className="versionDate"> - 2026/05/26</span>
+                <p className="changelogNote">サイトに以下の機能を追加しました：</p>
+                <ul>
+                  <li>「確定編成サポカ」をレンタル枠でも指定できるようにしました</li>
+                </ul>
+                <p className="changelogNote">以下の機能・動作・表示を改善しました：</p>
+                <ul>
+                  <li>Da4枚ふわもこ軸の内容を調整しました
+                    <p>Da8回踏みをするとDaが溢れてしまう場合があるため、7回に調整しています</p>
+                  </li>
+                  <li>おすすめ編成にサポカの凸状況を表示するようにしました</li>
+                  <li>SRサポカの順番を実装順にしました</li>
+                </ul>
+                <p className="subText">
+                  ※HIF編の計算条件は仮設定であり、順次調整する予定です。
+                  <br />
+                  ※HIFの強化月間は未対応のため、ONにしても通常HIFと同じ条件で計算されます。
+                </p>
 
                 <p><strong>v1.1.1</strong></p>
                 <span className="versionDate"> - 2026/05/18</span>
@@ -1710,13 +1729,8 @@ function App() {
                   <li>"ふわふわでもこもこ"の最大発動回数を8回にしました</li>
                   <li>「ぜったい追いついてやる！」のサポカ名表記を修正しました</li>
                   <li>（追記）「ひとりで立てますか？」のサポカ名表記を修正しました</li>
-                  <li>その他、細かな表示や文言を調整しました。</li>
+                  <li>その他、細かな表示や文言を調整しました</li>
                 </ul>
-                <p className="subText">
-                  ※HIF編の計算条件は仮設定であり、順次調整する予定です。
-                  <br />
-                  ※HIFの強化月間は未対応のため、ONにしても通常HIFと同じ条件で計算されます。
-                </p>
 
                 <p><strong>v1.1.0</strong></p>
                 <span className="versionDate"> - 2026/05/16</span>
@@ -1806,6 +1820,17 @@ function App() {
                 </p>
 
                 <ul className="statusList">
+                  <li>
+                    <p className="statusTitle">
+                      所持サポカ登録でSR・配布サポカの順番が違う
+                    </p>
+                    <div className="statusBody">
+                      <p>SRサポカについては、ゲーム内の「コミュ＞サポートコミュ」で確認できる順番に合わせて修正しました。</p>
+                      <p>配布サポカについては、現在どの部分の順番が異なるか確認中です。確認でき次第、順次対応いたします。</p>
+                      <span className="versionDate"> - 2026/05/26</span>
+                    </div>
+                  </li>
+
                   <li>
                     <p className="statusTitle">
                       サポカの表記名が間違っている
