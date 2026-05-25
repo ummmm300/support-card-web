@@ -332,6 +332,7 @@ function App() {
   const [fixedCardSearchText, setFixedCardSearchText] = useState("");
   const [fixedCardIds, setFixedCardIds] = useState([]);
   const [fixedRentalCardId, setFixedRentalCardId] = useState("");
+  const [fixedRentalCardSearchText, setFixedRentalCardSearchText] = useState("");
 
   const calculationMode = calculationSettings.mode;
   const calculationPlan = calculationSettings.plan;
@@ -492,7 +493,6 @@ function App() {
       const card = cards.find((c) => String(c.card_id) === String(prev));
       if (!card) return "";
 
-      if (Number(card.rental_candidate ?? 0) !== 1) return "";
       if (!isCardAvailableForPlan(card, plan)) return "";
 
       const isAlreadyFixedAsOwned = fixedCardIds.some(
@@ -1084,7 +1084,15 @@ function App() {
 
   function createRentalCardResultsForContext(context, scoreBonusByCardId = {}) {
     return cards
-      .filter((card) => Number(card.rental_candidate ?? 0) === 1)
+      .filter((card) => {
+        const isDefaultRentalCandidate =
+          Number(card.rental_candidate ?? 0) === 1;
+
+        const isFixedRentalCard =
+          String(card.card_id) === String(calculationFixedRentalCardId);
+
+        return isDefaultRentalCandidate || isFixedRentalCard;
+      })
       .filter((card) => isCardAvailableForPlan(card, calculationPlan))
       .map((card) => {
         const limitBreak = 4;
@@ -1138,14 +1146,16 @@ function App() {
 
   const rentalCardResults = useMemo(() => {
     return cards
-      .filter((card) => card.rental_candidate === 1)
       .filter((card) => {
-        if (calculationPlan === "sense") return card.sense === 1;
-        if (calculationPlan === "motivation") return card.logic === 1;
-        if (calculationPlan === "impression") return card.logic === 1;
-        if (calculationPlan === "anomaly") return card.anomaly === 1;
-        return true;
+        const isDefaultRentalCandidate =
+          Number(card.rental_candidate ?? 0) === 1;
+
+        const isFixedRentalCard =
+          String(card.card_id) === String(calculationFixedRentalCardId);
+
+        return isDefaultRentalCandidate || isFixedRentalCard;
       })
+      .filter((card) => isCardAvailableForPlan(card, calculationPlan))
       .map((card) => {
         const limitBreak = 4;
         const score = calcCardScore(
@@ -1163,7 +1173,11 @@ function App() {
         };
       })
       .sort((a, b) => b.score - a.score);
-  }, [calculationPlan, calculationContext]);
+  }, [
+    calculationPlan,
+    calculationContext,
+    calculationFixedRentalCardId,
+  ]);
 
   function getParamTypeClass(paramType) {
     if (paramType === "Vo") return "paramTypeVo";
@@ -2390,27 +2404,20 @@ function App() {
                   .filter((card) => ownedCards?.[card.card_id]?.owned)
                   .filter((card) => isCardAvailableForPlan(card, plan))
                   .filter((card) => String(card.card_id) !== String(fixedRentalCardId))
-                  .filter((card) => !fixedCardIds.some((id) => String(id) === String(card.card_id)))
+                  .filter(
+                    (card) =>
+                      !fixedCardIds.some(
+                        (cardId) => String(cardId) === String(card.card_id)
+                      )
+                  )
                   .filter((card) => card.name.includes(fixedCardSearchText))
-                  .slice(0, 10)
                   .map((card) => (
                     <button
                       key={card.card_id}
                       type="button"
                       className="fixedCardSearchItem"
                       onClick={() => {
-                        setFixedCardIds((prev) => {
-                          if (prev.some((id) => String(id) === String(card.card_id))) {
-                            return prev;
-                          }
-
-                          if (prev.length >= 5) {
-                            return prev;
-                          }
-
-                          return [...prev, card.card_id];
-                        });
-
+                        setFixedCardIds((prev) => [...prev, String(card.card_id)]);
                         setFixedCardSearchText("");
                       }}
                     >
@@ -2445,44 +2452,71 @@ function App() {
               </div>
             )}
           </div>
-          <div className="fixedRentalCardBox">
-            <div className="smallSectionTitle">レンタル枠に固定するサポカ</div>
+
+          <div className="fixedCardBox">
+            <div className="sectionTitle">レンタル枠に固定するサポカ</div>
 
             <p className="subText">
               指定した場合、レンタル枠はこのサポカで固定して計算します。
             </p>
 
-            <select
-              className="selectBox"
-              value={fixedRentalCardId}
-              onChange={(e) => setFixedRentalCardId(e.target.value)}
-            >
-              <option value="">指定しない</option>
+            <input
+              className="searchInput"
+              type="text"
+              placeholder="サポカ名で検索"
+              value={fixedRentalCardSearchText}
+              onChange={(e) => setFixedRentalCardSearchText(e.target.value)}
+            />
 
-              {cards
-                .filter((card) => Number(card.rental_candidate ?? 0) === 1)
-                .filter((card) => isCardAvailableForPlan(card, plan))
-                .filter(
-                  (card) =>
-                    !fixedCardIds.some(
-                      (cardId) => String(cardId) === String(card.card_id)
-                    )
-                )
-                .map((card) => (
-                  <option key={card.card_id} value={card.card_id}>
-                    {card.name}
-                  </option>
-                ))}
-            </select>
+            {fixedRentalCardSearchText && (
+              <div className="fixedCardSearchResults">
+                {cards
+                  .filter((card) => isCardAvailableForPlan(card, plan))
+                  .filter(
+                    (card) =>
+                      !fixedCardIds.some(
+                        (cardId) => String(cardId) === String(card.card_id)
+                      )
+                  )
+                  .filter((card) => String(card.card_id) !== String(fixedRentalCardId))
+                  .filter((card) => card.name.includes(fixedRentalCardSearchText))
+                  .map((card) => (
+                    <button
+                      key={card.card_id}
+                      type="button"
+                      className="fixedCardSearchItem"
+                      onClick={() => {
+                        setFixedRentalCardId(String(card.card_id));
+                        setFixedRentalCardSearchText("");
+                      }}
+                    >
+                      {card.name}
+                    </button>
+                  ))}
+              </div>
+            )}
 
             {fixedRentalCardId && (
-              <button
-                type="button"
-                className="secondaryButton"
-                onClick={() => setFixedRentalCardId("")}
-              >
-                レンタル固定を解除
-              </button>
+              <div className="fixedCardList">
+                {(() => {
+                  const card = cards.find(
+                    (c) => String(c.card_id) === String(fixedRentalCardId)
+                  );
+                  if (!card) return null;
+
+                  return (
+                    <div className="fixedCardChip">
+                      <span>{card.name}</span>
+                      <button
+                        type="button"
+                        onClick={() => setFixedRentalCardId("")}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  );
+                })()}
+              </div>
             )}
           </div>
 
