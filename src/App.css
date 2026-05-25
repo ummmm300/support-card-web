@@ -998,7 +998,7 @@ body.darkModeBody #root {
 
 .recommendTable {
   table-layout: fixed;
-  min-width: 560px;
+  min-width: 600px;
 }
 
 .recommendTable th,
@@ -1018,22 +1018,30 @@ body.darkModeBody #root {
 
 .recommendTable th:nth-child(3),
 .recommendTable td:nth-child(3) {
+  width: 3.2em;
+  min-width: 3.2em;
+  max-width: 3.2em;
+  text-align: center;
+}
+
+.recommendTable th:nth-child(4),
+.recommendTable td:nth-child(4) {
   width: 5.2em;
   min-width: 5.2em;
   max-width: 5.2em;
   text-align: right;
 }
 
-.recommendTable th:nth-child(4),
-.recommendTable td:nth-child(4) {
+.recommendTable th:nth-child(5),
+.recommendTable td:nth-child(5) {
   width: 3.6em;
   min-width: 3.6em;
   max-width: 3.6em;
   text-align: center;
 }
 
-.recommendTable th:nth-child(5),
-.recommendTable td:nth-child(5) {
+.recommendTable th:nth-child(6),
+.recommendTable td:nth-child(6) {
   width: 3.6em;
   min-width: 3.6em;
   max-width: 3.6em;

@@ -208,7 +208,34 @@ const CANDIDATE_LIMIT_PER_TYPE = 7;
 
 const BASE_MODE_KEYS = ["hif", "legend"];
 
-const NEW_CARD_IDS = ["card_109", "card_108"];
+const CARD_INDEX_BY_ID = Object.fromEntries(
+  cards.map((card, index) => [String(card.card_id), index])
+);
+
+function getCardOriginalIndex(card) {
+  return CARD_INDEX_BY_ID[String(card.card_id)] ?? Number.MAX_SAFE_INTEGER;
+}
+
+function getSupportCardDisplayOrder(card) {
+  const order = Number(card.display_order ?? 0);
+
+  if (Number.isFinite(order) && order > 0) {
+    return order;
+  }
+
+  return Number.POSITIVE_INFINITY;
+}
+
+function compareSupportCardDisplayOrder(a, b) {
+  const orderDiff =
+    getSupportCardDisplayOrder(a) - getSupportCardDisplayOrder(b);
+
+  if (orderDiff !== 0) {
+    return orderDiff;
+  }
+
+  return getCardOriginalIndex(a) - getCardOriginalIndex(b);
+}
 
 const FUWAMOKO_HIF_VARIANT_KEY = "fuwamokoDa4";
 
@@ -2401,6 +2428,8 @@ function App() {
             {fixedCardSearchText && (
               <div className="fixedCardSearchResults">
                 {cards
+                  .slice()
+                  .sort(compareSupportCardDisplayOrder)
                   .filter((card) => ownedCards?.[card.card_id]?.owned)
                   .filter((card) => isCardAvailableForPlan(card, plan))
                   .filter((card) => String(card.card_id) !== String(fixedRentalCardId))
@@ -2471,6 +2500,8 @@ function App() {
             {fixedRentalCardSearchText && (
               <div className="fixedCardSearchResults">
                 {cards
+                  .slice()
+                  .sort(compareSupportCardDisplayOrder)
                   .filter((card) => isCardAvailableForPlan(card, plan))
                   .filter(
                     (card) =>
@@ -2729,6 +2760,7 @@ function App() {
               サポカ点数一覧
             </button>
           </div>
+
           {showResult && (
             <div className="resultSection">
               {resultViewMode === "recommend" && (
@@ -2755,6 +2787,7 @@ function App() {
                               <tr>
                                 <th>レンタル</th>
                                 <th>サポカ名</th>
+                                <th>凸</th>
                                 <th>点数</th>
                                 <th>タイプ</th>
                                 <th>SP率</th>
@@ -2766,6 +2799,7 @@ function App() {
                                 <tr key={result.card.card_id}>
                                   <td>{result.isRental ? "○" : ""}</td>
                                   <td>{result.card.name}</td>
+                                  <td>{result.limitBreak}凸</td>
                                   <td>{formatScore(result.displayScore ?? result.score)}</td>
                                   <td>
                                     <span className={`paramTypeBadge ${getParamTypeClass(result.card.param_type)}`}>
@@ -2973,19 +3007,7 @@ function App() {
           <div className="ownedList">
             {filteredOwnedCards
               .slice()
-              .sort((a, b) => {
-                const aNewIndex = NEW_CARD_IDS.indexOf(String(a.card_id));
-                const bNewIndex = NEW_CARD_IDS.indexOf(String(b.card_id));
-
-                const aIsNew = aNewIndex !== -1;
-                const bIsNew = bNewIndex !== -1;
-
-                if (aIsNew && bIsNew) return aNewIndex - bNewIndex;
-                if (aIsNew) return -1;
-                if (bIsNew) return 1;
-
-                return 0;
-              })
+              .sort(compareSupportCardDisplayOrder)
               .map((card) => {
 
                 const owned = ownedCards[card.card_id]?.owned ?? false;
