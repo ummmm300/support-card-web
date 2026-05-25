@@ -324,12 +324,14 @@ function App() {
     specialItemEffectCounts: createDefaultSpecialItemEffectCounts(),
     generalEffectCounts: createDefaultGeneralEffectCounts(),
     fixedCardIds: [],
+    fixedRentalCardId: "",
     hifManualContextOverrides: {},
     manualSpCardConditions: createDefaultManualSpCardConditions(),
   });
 
   const [fixedCardSearchText, setFixedCardSearchText] = useState("");
   const [fixedCardIds, setFixedCardIds] = useState([]);
+  const [fixedRentalCardId, setFixedRentalCardId] = useState("");
 
   const calculationMode = calculationSettings.mode;
   const calculationPlan = calculationSettings.plan;
@@ -365,6 +367,9 @@ function App() {
 
   const calculationFixedCardIds =
     calculationSettings?.fixedCardIds ?? [];
+
+  const calculationFixedRentalCardId =
+    calculationSettings?.fixedRentalCardId ?? "";
 
   const calculationContext = useMemo(() => {
     const baseContext =
@@ -479,6 +484,26 @@ function App() {
       })
     );
   }, [ownedCards, plan]);
+
+  useEffect(() => {
+    setFixedRentalCardId((prev) => {
+      if (!prev) return prev;
+
+      const card = cards.find((c) => String(c.card_id) === String(prev));
+      if (!card) return "";
+
+      if (Number(card.rental_candidate ?? 0) !== 1) return "";
+      if (!isCardAvailableForPlan(card, plan)) return "";
+
+      const isAlreadyFixedAsOwned = fixedCardIds.some(
+        (cardId) => String(cardId) === String(prev)
+      );
+
+      if (isAlreadyFixedAsOwned) return "";
+
+      return prev;
+    });
+  }, [plan, fixedCardIds]);
 
   const [calculationOwnedCards, setCalculationOwnedCards] = useState(ownedCards);
 
@@ -1057,18 +1082,25 @@ function App() {
       .sort((a, b) => b.score - a.score);
   }
 
-  function createRentalCardResultsForContext(context) {
+  function createRentalCardResultsForContext(context, scoreBonusByCardId = {}) {
     return cards
-      .filter((card) => card.rental_candidate === 1)
+      .filter((card) => Number(card.rental_candidate ?? 0) === 1)
       .filter((card) => isCardAvailableForPlan(card, calculationPlan))
       .map((card) => {
         const limitBreak = 4;
-        const score = calcCardScore(card, abilityDb, context, limitBreak);
+
+        const baseScore = calcCardScore(card, abilityDb, context, limitBreak);
+        const specialItemScoreBonus =
+          scoreBonusByCardId[String(card.card_id)] ?? 0;
+
+        const score = baseScore + specialItemScoreBonus;
 
         return {
           card,
           limitBreak,
           score,
+          baseScore,
+          specialItemScoreBonus,
           isRental: true,
         };
       })
@@ -1224,6 +1256,7 @@ function App() {
     abilityDb,
     calculationContext,
     forcedCardIds = [],
+    fixedRentalCardId = "",
   }) {
 
     const pattern = patternOverride ?? makeTypePattern(trend, patternName);
@@ -1238,7 +1271,17 @@ function App() {
 
     let bestTotalScore = -Infinity;
 
-    const limitedRentalResults = rentalResults.slice(0, 12);
+    const normalizedFixedRentalCardId = fixedRentalCardId
+      ? String(fixedRentalCardId)
+      : "";
+
+    const limitedRentalResults = normalizedFixedRentalCardId
+      ? rentalResults.filter(
+        (result) =>
+          String(result.card.card_id) === normalizedFixedRentalCardId
+      )
+      : rentalResults.slice(0, 12);
+
     const forcedCardIdSet = new Set(forcedCardIds.map((id) => String(id)));
 
     for (const rentalResult of limitedRentalResults) {
@@ -1351,7 +1394,13 @@ function App() {
         if (!effectCard) return false;
 
         if (!isCardAvailableForPlan(effectCard, calculationPlan)) return false;
-        if (!calculationOwnedCards[effectCard.card_id]?.owned) return false;
+        const isOwnedEffectCard =
+          Boolean(calculationOwnedCards[effectCard.card_id]?.owned);
+
+        const isFixedRentalEffectCard =
+          String(effectCard.card_id) === String(calculationFixedRentalCardId);
+
+        if (!isOwnedEffectCard && !isFixedRentalEffectCard) return false;
 
         return true;
       }
@@ -1374,6 +1423,7 @@ function App() {
         ownedResults: ownedCardResults,
         rentalResults: rentalCardResults,
         forcedCardIds: calculationFixedCardIds,
+        fixedRentalCardId: calculationFixedRentalCardId,
       });
     }
 
@@ -1400,7 +1450,10 @@ function App() {
       );
 
       const adjustedRentalResults =
-        createRentalCardResultsForContext(adjustedContext);
+        createRentalCardResultsForContext(
+          adjustedContext,
+          specialItemScoreBonusByCardId
+        );
 
       scenarios.push({
         scenarioKey: "specialItem",
@@ -1411,9 +1464,15 @@ function App() {
         forcedCardIds: Array.from(
           new Set([
             ...calculationFixedCardIds.map(String),
-            ...activeSpecialItemEffects.map(([, effect]) => String(effect.cardId)),
+            ...activeSpecialItemEffects
+              .filter(([, effect]) => {
+                const effectCardId = String(effect.cardId);
+                return calculationOwnedCards[effectCardId]?.owned;
+              })
+              .map(([, effect]) => String(effect.cardId)),
           ])
         ),
+        fixedRentalCardId: calculationFixedRentalCardId,
       });
     }
 
@@ -1474,6 +1533,7 @@ function App() {
           abilityDb,
           calculationContext: scenario.context,
           forcedCardIds: scenario.forcedCardIds,
+          fixedRentalCardId: scenario.fixedRentalCardId,
         });
 
         return {
@@ -2329,6 +2389,7 @@ function App() {
                 {cards
                   .filter((card) => ownedCards?.[card.card_id]?.owned)
                   .filter((card) => isCardAvailableForPlan(card, plan))
+                  .filter((card) => String(card.card_id) !== String(fixedRentalCardId))
                   .filter((card) => !fixedCardIds.some((id) => String(id) === String(card.card_id)))
                   .filter((card) => card.name.includes(fixedCardSearchText))
                   .slice(0, 10)
@@ -2382,6 +2443,46 @@ function App() {
                   );
                 })}
               </div>
+            )}
+          </div>
+          <div className="fixedRentalCardBox">
+            <div className="smallSectionTitle">レンタル枠に固定するサポカ</div>
+
+            <p className="subText">
+              指定した場合、レンタル枠はこのサポカで固定して計算します。
+            </p>
+
+            <select
+              className="selectBox"
+              value={fixedRentalCardId}
+              onChange={(e) => setFixedRentalCardId(e.target.value)}
+            >
+              <option value="">指定しない</option>
+
+              {cards
+                .filter((card) => Number(card.rental_candidate ?? 0) === 1)
+                .filter((card) => isCardAvailableForPlan(card, plan))
+                .filter(
+                  (card) =>
+                    !fixedCardIds.some(
+                      (cardId) => String(cardId) === String(card.card_id)
+                    )
+                )
+                .map((card) => (
+                  <option key={card.card_id} value={card.card_id}>
+                    {card.name}
+                  </option>
+                ))}
+            </select>
+
+            {fixedRentalCardId && (
+              <button
+                type="button"
+                className="secondaryButton"
+                onClick={() => setFixedRentalCardId("")}
+              >
+                レンタル固定を解除
+              </button>
             )}
           </div>
 
@@ -2503,7 +2604,13 @@ function App() {
 
                   if (!effectCard) return null;
                   if (!isCardAvailableForPlan(effectCard, plan)) return null;
-                  if (!ownedCards[effectCard.card_id]?.owned) return null;
+                  const isOwnedEffectCard =
+                    Boolean(ownedCards[effectCard.card_id]?.owned);
+
+                  const isFixedRentalEffectCard =
+                    String(effectCard.card_id) === String(fixedRentalCardId);
+
+                  if (!isOwnedEffectCard && !isFixedRentalEffectCard) return null;
 
                   return (
                     <label key={effectKey}>
@@ -2563,6 +2670,7 @@ function App() {
                 specialItemEffectCounts,
                 generalEffectCounts,
                 fixedCardIds,
+                fixedRentalCardId,
                 hifManualContextOverrides,
                 hifManualDeckPattern,
               });

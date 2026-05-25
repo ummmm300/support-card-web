@@ -1793,7 +1793,7 @@ export const HIF_VARIANTS = {
     fuwamokoDa4: {
         label: "Da4枚ふわもこ軸（花ロボ：黄）",
         description:
-            "ふわもこ採用でDaSPを8回踏む、Daサポカ4枚編成向けの設定です。必要に応じてSP率条件を手動設定してください。",
+            "ふわもこ採用でDaSPを7回踏む、Daサポカ4枚編成向けの設定です。必要に応じてSP率条件を手動設定してください。",
         contextOverrides: {
             param_vo_total: 170,
             param_da_total: 800,
