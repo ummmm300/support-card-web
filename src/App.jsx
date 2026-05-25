@@ -434,7 +434,7 @@ function App() {
         }
         : {
           ...baseContext,
-          ...(HIF_VARIANTS[hifVariant]?.contextOverrides ?? {}),
+          ...getHifVariantContextOverrides(hifVariant, calculationType),
         };
 
     return applyHifExamParamsToContext({
@@ -673,7 +673,7 @@ function App() {
 
     const contextWithHifVariant = {
       ...baseContext,
-      ...(HIF_VARIANTS[hifVariant]?.contextOverrides ?? {}),
+      ...getHifVariantContextOverrides(hifVariant, type),
     };
 
     return applyHifExamParamsToContext({
@@ -873,6 +873,19 @@ function App() {
     }
 
     return baseMode;
+  }
+
+  function getHifVariantContextOverrides(hifVariant, type) {
+    const variant = HIF_VARIANTS[hifVariant];
+
+    if (!variant) {
+      return {};
+    }
+
+    return {
+      ...(variant.contextOverrides ?? {}),
+      ...(variant.contextOverridesByType?.[type] ?? {}),
+    };
   }
 
   function makeTypePattern(type, patternName) {
