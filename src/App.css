@@ -981,6 +981,16 @@ body.darkModeBody #root {
   color: #4a3a10;
 }
 
+.paramTypeAs {
+  background: #dff3e4;
+  color: #174a28;
+}
+
+.darkModeBody .paramTypeAs {
+  background: #245c35;
+  color: #e5ffe9;
+}
+
 .darkModeBody .paramTypeVo {
   background: #6b3038;
   color: #ffe6ea;
@@ -1042,9 +1052,9 @@ body.darkModeBody #root {
 
 .recommendTable th:nth-child(6),
 .recommendTable td:nth-child(6) {
-  width: 3.6em;
-  min-width: 3.6em;
-  max-width: 3.6em;
+  width: 4.2em;
+  min-width: 4.2em;
+  max-width: 4.2em;
   text-align: right;
 }
 

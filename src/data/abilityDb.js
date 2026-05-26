@@ -362,6 +362,17 @@ export const abilityDb = {
     ],
     "limit_count": -1
   },
+  "on_supply_2times_id__SSR": {
+    "kind": "on_supply",
+    "values": [
+      28.0,
+      38.0,
+      38.0,
+      38.0,
+      38.0
+    ],
+    "limit_count": 2.0
+  },
   "on_consult_id__SSR": {
     "kind": "on_consult",
     "values": [
@@ -372,6 +383,17 @@ export const abilityDb = {
       18.0
     ],
     "limit_count": -1
+  },
+  "on_consult_2times_id__SSR": {
+    "kind": "on_consult",
+    "values": [
+      28.0,
+      38.0,
+      38.0,
+      38.0,
+      38.0
+    ],
+    "limit_count": 2.0
   },
   "on_outing_id__SSR": {
     "kind": "on_outing",

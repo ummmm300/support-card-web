@@ -69,6 +69,9 @@ const CONTEXT_LABELS = {
 
 
 const TYPE_ORDER = ["Vo", "Da", "Vi"];
+const ASSIST_PARAM_TYPE = "As";
+const ALL_SP_RATE_VALUE = 28;
+
 const TREND_TO_TYPES = {
   voda: ["Vo", "Da", "Vi"],
   davi: ["Da", "Vi", "Vo"],
@@ -205,6 +208,12 @@ function createDefaultGeneralEffectCounts() {
 }
 
 const CANDIDATE_LIMIT_PER_TYPE = 7;
+const ASSIST_CANDIDATE_LIMIT_PER_TYPE = 5;
+const ASSIST_REPLACEMENT_TYPE_LIMIT = 2;
+const ASSIST_REPLACEMENT_TYPE_LIMIT_WITHOUT_SP_CONDITION = 1;
+const RENTAL_CANDIDATE_LIMIT = 10;
+const RENTAL_CANDIDATE_LIMIT_WITHOUT_SP_CONDITION = 8;
+
 
 const BASE_MODE_KEYS = ["hif", "legend"];
 
@@ -612,7 +621,7 @@ function App() {
         return prev;
       }
 
-      const targetCount = Math.min(8, effect.maxCount ?? 8);
+      const targetCount = Math.min(7, effect.maxCount ?? 7);
 
       if (Number(prev?.[FUWAMOKO_EFFECT_KEY] ?? 0) === targetCount) {
         return prev;
@@ -780,13 +789,111 @@ function App() {
     reader.readAsText(file);
   }
 
+  function isAssistCard(card) {
+    return card?.param_type === ASSIST_PARAM_TYPE;
+  }
+
+  function isAssistCardResult(result) {
+    return isAssistCard(result?.card ?? result);
+  }
+
+  function isAllSpRateCard(card) {
+    return String(card?.sp_rate_scope ?? "normal").trim().toLowerCase() === "all";
+  }
+
+  function getValidSpTypesForTrend(trend) {
+    return TREND_TO_VALID_SP_TYPES[trend] ?? [];
+  }
+
+  function hasAnySpCardCondition(spCardConditions) {
+    const conditions = spCardConditions ?? createDefaultManualSpCardConditions();
+
+    return (
+      Number(conditions.total ?? 0) > 0 ||
+      Number(conditions.vo ?? 0) > 0 ||
+      Number(conditions.da ?? 0) > 0 ||
+      Number(conditions.vi ?? 0) > 0
+    );
+  }
+
+  function getAssistReplacementTypeLimit(spCardConditions) {
+    return hasAnySpCardCondition(spCardConditions)
+      ? ASSIST_REPLACEMENT_TYPE_LIMIT
+      : ASSIST_REPLACEMENT_TYPE_LIMIT_WITHOUT_SP_CONDITION;
+  }
+
+  function getRentalCandidateLimit(spCardConditions) {
+    return hasAnySpCardCondition(spCardConditions)
+      ? RENTAL_CANDIDATE_LIMIT
+      : RENTAL_CANDIDATE_LIMIT_WITHOUT_SP_CONDITION;
+  }
+
+  function createPatternVariantsWithOneAssist(
+    pattern,
+    normalResults,
+    replacementTypeLimit = ASSIST_REPLACEMENT_TYPE_LIMIT
+  ) {
+    const replaceableTypes = TYPE_ORDER.filter(
+      (cardType) => Number(pattern?.[cardType] ?? 0) > 0
+    );
+
+    const scoredReplaceableTypes = replaceableTypes
+      .map((cardType) => {
+        const requiredCount = Number(pattern?.[cardType] ?? 0);
+
+        const sortedTypeResults = normalResults
+          .filter((result) => result.card.param_type === cardType)
+          .sort((a, b) => b.score - a.score);
+
+        const replacedCardScore =
+          sortedTypeResults[requiredCount - 1]?.score ?? Number.POSITIVE_INFINITY;
+
+        return {
+          cardType,
+          replacedCardScore,
+        };
+      })
+      .sort((a, b) => a.replacedCardScore - b.replacedCardScore);
+
+    return scoredReplaceableTypes
+      .slice(0, replacementTypeLimit)
+      .map(({ cardType }) => ({
+        ...pattern,
+        [cardType]: Number(pattern[cardType] ?? 0) - 1,
+      }));
+  }
+
+  function mergeUniqueResultsByCardId(results) {
+    const merged = [];
+
+    for (const result of results) {
+      const cardId = String(result.card.card_id);
+
+      const alreadyExists = merged.some(
+        (item) => String(item.card.card_id) === cardId
+      );
+
+      if (!alreadyExists) {
+        merged.push(result);
+      }
+    }
+
+    return merged;
+  }
+
   function getSpRate(result) {
     if (!result) return 0;
 
     const card = result.card ?? result;
     const limitBreak = result.limitBreak ?? 0;
 
-    if (!card || !Array.isArray(card.abilities)) return 0;
+    if (!card) return 0;
+
+    if (isAllSpRateCard(card)) {
+      return ALL_SP_RATE_VALUE;
+    }
+
+    if (!Array.isArray(card.abilities)) return 0;
 
     const abilityIndex = card.abilities.indexOf("sp_rate_id");
     if (abilityIndex === -1) return 0;
@@ -800,28 +907,49 @@ function App() {
     return Number(ability.values[idx] ?? 0);
   }
 
+  function getSpRateDisplay(result) {
+    const card = result?.card ?? result;
+
+    if (isAllSpRateCard(card)) {
+      return `全${getSpRate(result)}`;
+    }
+
+    return String(getSpRate(result));
+  }
+
   function isDaSpCard(result) {
-    return result?.card?.param_type === "Da" && getSpRate(result) > 0;
+    const card = result?.card ?? result;
+
+    return (
+      getSpRate(result) > 0 &&
+      (card?.param_type === "Da" || isAllSpRateCard(card))
+    );
   }
 
   function hasSpRateUp(card) {
+    if (isAllSpRateCard(card)) return true;
+
     return Array.isArray(card.abilities)
       ? card.abilities.includes("sp_rate_id")
       : false;
   }
 
-  function hasValidSpRateUp(card, calculationType) {
+  function hasValidSpRateUp(card, targetTrend = calculationType) {
     if (!hasSpRateUp(card)) return false;
 
-    if (calculationType === "voda") {
+    if (isAllSpRateCard(card)) {
+      return getValidSpTypesForTrend(targetTrend).length > 0;
+    }
+
+    if (targetTrend === "voda") {
       return card.param_type === "Vo" || card.param_type === "Da";
     }
 
-    if (calculationType === "davi") {
+    if (targetTrend === "davi") {
       return card.param_type === "Da" || card.param_type === "Vi";
     }
 
-    if (calculationType === "vovi") {
+    if (targetTrend === "vovi") {
       return card.param_type === "Vo" || card.param_type === "Vi";
     }
 
@@ -834,33 +962,84 @@ function App() {
     if (!hasValidSpRateUp(card, calculationType)) return null;
     if (getSpRate(result) <= 0) return null;
 
+    if (isAllSpRateCard(card)) {
+      return "All";
+    }
+
     return card.param_type;
   }
 
   function satisfiesSpCardConditions(team, spCardConditions) {
     const conditions = spCardConditions ?? createDefaultManualSpCardConditions();
 
-    const spResults = team.filter((result) =>
-      hasValidSpRateUp(result.card, calculationType)
+    const requiredTotal = Number(conditions.total ?? 0);
+    const requiredByType = {
+      Vo: Number(conditions.vo ?? 0),
+      Da: Number(conditions.da ?? 0),
+      Vi: Number(conditions.vi ?? 0),
+    };
+
+    const validSpTypes = getValidSpTypesForTrend(calculationType);
+
+    const normalSpResults = team.filter((result) => {
+      const card = result.card;
+      if (isAllSpRateCard(card)) return false;
+      return hasValidSpRateUp(card, calculationType);
+    });
+
+    const allSpResults = team.filter((result) => {
+      const card = result.card;
+      return isAllSpRateCard(card) && getSpRate(result) > 0;
+    });
+
+    const normalSpCountByType = {
+      Vo: normalSpResults.filter((result) => result.card.param_type === "Vo").length,
+      Da: normalSpResults.filter((result) => result.card.param_type === "Da").length,
+      Vi: normalSpResults.filter((result) => result.card.param_type === "Vi").length,
+    };
+
+    const allSpCount = allSpResults.length;
+
+    const satisfiesTypeConditions = validSpTypes.every((cardType) => {
+      const normalCount = normalSpCountByType[cardType] ?? 0;
+      const requiredCount = requiredByType[cardType] ?? 0;
+
+      return normalCount + allSpCount >= requiredCount;
+    });
+
+    if (!satisfiesTypeConditions) {
+      return false;
+    }
+
+    const remainingRequiredByType = Object.fromEntries(
+      TYPE_ORDER.map((cardType) => [
+        cardType,
+        Math.max(
+          0,
+          Number(requiredByType[cardType] ?? 0) -
+          Number(normalSpCountByType[cardType] ?? 0)
+        ),
+      ])
     );
 
-    const totalSpCount = spResults.length;
-    const voSpCount = spResults.filter(
-      (result) => result.card.param_type === "Vo"
-    ).length;
-    const daSpCount = spResults.filter(
-      (result) => result.card.param_type === "Da"
-    ).length;
-    const viSpCount = spResults.filter(
-      (result) => result.card.param_type === "Vi"
-    ).length;
+    let effectiveTotalSpCount = normalSpResults.length;
 
-    return (
-      totalSpCount >= Number(conditions.total ?? 0) &&
-      voSpCount >= Number(conditions.vo ?? 0) &&
-      daSpCount >= Number(conditions.da ?? 0) &&
-      viSpCount >= Number(conditions.vi ?? 0)
-    );
+    allSpResults.forEach(() => {
+      const coveredTypes = validSpTypes.filter(
+        (cardType) => Number(remainingRequiredByType[cardType] ?? 0) > 0
+      );
+
+      const contribution = Math.max(1, coveredTypes.length);
+
+      effectiveTotalSpCount += contribution;
+
+      coveredTypes.forEach((cardType) => {
+        remainingRequiredByType[cardType] =
+          Number(remainingRequiredByType[cardType] ?? 0) - 1;
+      });
+    });
+
+    return effectiveTotalSpCount >= requiredTotal;
   }
 
   function formatScore(score) {
@@ -1002,6 +1181,7 @@ function App() {
     calculationContext,
     forcedCardIds = [],
   }) {
+    const rentalIsAssist = isAssistCardResult(rentalResult);
 
     const normalizedForcedCardIds = Array.from(
       new Set(forcedCardIds.map((id) => String(id)))
@@ -1017,9 +1197,22 @@ function App() {
       return null;
     }
 
+    const forcedAssistResults = forcedResults.filter(isAssistCardResult);
+    const forcedNormalResults = forcedResults.filter(
+      (result) => !isAssistCardResult(result)
+    );
+
+    if (forcedAssistResults.length > 1) {
+      return null;
+    }
+
+    if (rentalIsAssist && forcedAssistResults.length > 0) {
+      return null;
+    }
+
     const remainingPattern = { ...pattern };
 
-    for (const forcedResult of forcedResults) {
+    for (const forcedResult of forcedNormalResults) {
       const forcedType = forcedResult.card.param_type;
 
       remainingPattern[forcedType] = (remainingPattern[forcedType] ?? 0) - 1;
@@ -1033,62 +1226,152 @@ function App() {
       (result) => !forcedCardIdSet.has(String(result.card.card_id))
     );
 
-    const groups = Object.fromEntries(
-      TYPE_ORDER.map((cardType) => [
-        cardType,
-        limitCandidatesByType(
-          selectableOwnedResults.filter(
-            (result) => result.card.param_type === cardType
-          ),
-          CANDIDATE_LIMIT_PER_TYPE,
-          {
-            spExtraLimit: 4,
-            synergyExtraLimit: 3,
-          }
-        )
-      ])
+    const selectableNormalResults = selectableOwnedResults.filter(
+      (result) => !isAssistCardResult(result)
     );
 
-    const choices = TYPE_ORDER.map((cardType) =>
-      combinations(
-        groups[cardType],
-        remainingPattern[cardType] ?? 0
-      )
-    );
+    const selectableAssistResults = selectableOwnedResults
+      .filter(isAssistCardResult)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 1);
+
+    const assistReplacementTypeLimit =
+      getAssistReplacementTypeLimit(spCardConditions);
+
+    const assistOptions = [];
+
+    if (rentalIsAssist) {
+      const patternVariants = createPatternVariantsWithOneAssist(
+        remainingPattern,
+        selectableNormalResults,
+        assistReplacementTypeLimit
+      );
+
+      patternVariants.forEach((patternVariant) => {
+        assistOptions.push({
+          assistResults: [],
+          patternVariant,
+          isAssistSearch: true,
+        });
+      });
+    } else if (forcedAssistResults.length > 0) {
+      const patternVariants = createPatternVariantsWithOneAssist(
+        remainingPattern,
+        selectableNormalResults,
+        assistReplacementTypeLimit
+      );
+
+      patternVariants.forEach((patternVariant) => {
+        assistOptions.push({
+          assistResults: forcedAssistResults,
+          patternVariant,
+          isAssistSearch: true,
+        });
+      });
+    } else {
+      assistOptions.push({
+        assistResults: [],
+        patternVariant: remainingPattern,
+        isAssistSearch: false,
+      });
+
+      selectableAssistResults.forEach((assistResult) => {
+        const patternVariants = createPatternVariantsWithOneAssist(
+          remainingPattern,
+          selectableNormalResults,
+          assistReplacementTypeLimit
+        );
+
+        patternVariants.forEach((patternVariant) => {
+          assistOptions.push({
+            assistResults: [assistResult],
+            patternVariant,
+            isAssistSearch: true,
+          });
+        });
+      });
+    }
 
     let bestResult = null;
     let bestTotalScore = -Infinity;
 
-    for (const voGroup of choices[0]) {
-      for (const daGroup of choices[1]) {
-        for (const viGroup of choices[2]) {
-          const ownTeam = [...forcedResults, ...voGroup, ...daGroup, ...viGroup];
-          const team = rentalResult ? [...ownTeam, rentalResult] : ownTeam;
-          if (!satisfiesSpCardConditions(team, spCardConditions)) {
-            continue;
-          }
+    for (const assistOption of assistOptions) {
+      const candidateLimit = assistOption.isAssistSearch
+        ? ASSIST_CANDIDATE_LIMIT_PER_TYPE
+        : CANDIDATE_LIMIT_PER_TYPE;
 
-          const baseScore = team.reduce((sum, result) => sum + result.score, 0);
+      const spExtraLimit = assistOption.isAssistSearch ? 3 : 4;
+      const synergyExtraLimit = assistOption.isAssistSearch ? 2 : 3;
 
-          const synergyResult = calcDeckSynergyScore(
-            team,
-            abilityDb,
-            calculationContext
-          );
+      const groups = Object.fromEntries(
+        TYPE_ORDER.map((cardType) => [
+          cardType,
+          limitCandidatesByType(
+            selectableNormalResults.filter(
+              (result) => result.card.param_type === cardType
+            ),
+            candidateLimit,
+            {
+              spExtraLimit,
+              synergyExtraLimit,
+            }
+          ),
+        ])
+      );
 
-          const synergyScore = synergyResult.totalScore;
-          const totalScore = baseScore + synergyScore;
+      const choices = TYPE_ORDER.map((cardType) =>
+        combinations(
+          groups[cardType],
+          assistOption.patternVariant[cardType] ?? 0
+        )
+      );
 
-          if (totalScore > bestTotalScore) {
-            bestTotalScore = totalScore;
-            bestResult = {
-              ownTeam,
+      for (const voGroup of choices[0]) {
+        for (const daGroup of choices[1]) {
+          for (const viGroup of choices[2]) {
+            const ownTeam = [
+              ...forcedNormalResults,
+              ...assistOption.assistResults,
+              ...voGroup,
+              ...daGroup,
+              ...viGroup,
+            ];
+
+            const team = rentalResult ? [...ownTeam, rentalResult] : ownTeam;
+
+            if (team.filter(isAssistCardResult).length > 1) {
+              continue;
+            }
+
+            if (!satisfiesSpCardConditions(team, spCardConditions)) {
+              continue;
+            }
+
+            const baseScore = team.reduce(
+              (sum, result) => sum + result.score,
+              0
+            );
+
+            const synergyResult = calcDeckSynergyScore(
               team,
-              baseScore,
-              synergyScore,
-              synergyBonusByCardId: synergyResult.bonusByCardId,
-              totalScore,
-            };
+              abilityDb,
+              calculationContext
+            );
+
+            const synergyScore = synergyResult.totalScore;
+            const totalScore = baseScore + synergyScore;
+
+            if (totalScore > bestTotalScore) {
+              bestTotalScore = totalScore;
+              bestResult = {
+                ownTeam,
+                team,
+                baseScore,
+                synergyScore,
+                synergyBonusByCardId: synergyResult.bonusByCardId,
+                totalScore,
+              };
+            }
           }
         }
       }
@@ -1223,6 +1506,7 @@ function App() {
     if (paramType === "Vo") return "paramTypeVo";
     if (paramType === "Da") return "paramTypeDa";
     if (paramType === "Vi") return "paramTypeVi";
+    if (paramType === "As") return "paramTypeAs";
     return "";
   }
 
@@ -1312,7 +1596,6 @@ function App() {
     forcedCardIds = [],
     fixedRentalCardId = "",
   }) {
-
     const pattern = patternOverride ?? makeTypePattern(trend, patternName);
 
     let bestResult = {
@@ -1329,12 +1612,17 @@ function App() {
       ? String(fixedRentalCardId)
       : "";
 
+    const rentalCandidateLimit = getRentalCandidateLimit(spCardConditions);
+
     const limitedRentalResults = normalizedFixedRentalCardId
       ? rentalResults.filter(
         (result) =>
           String(result.card.card_id) === normalizedFixedRentalCardId
       )
-      : rentalResults.slice(0, 12);
+      : mergeUniqueResultsByCardId([
+        ...rentalResults.slice(0, rentalCandidateLimit),
+        ...rentalResults.filter(isAssistCardResult).slice(0, 1),
+      ]);
 
     const forcedCardIdSet = new Set(forcedCardIds.map((id) => String(id)));
 
@@ -1343,65 +1631,74 @@ function App() {
         continue;
       }
 
-      const remainingPattern = { ...pattern };
-      const rentalType = rentalResult.card.param_type;
+      const rentalIsAssist = isAssistCardResult(rentalResult);
 
-      remainingPattern[rentalType] =
-        (remainingPattern[rentalType] ?? 0) - 1;
+      const rentalPatternVariants = rentalIsAssist
+        ? createPatternVariantsWithOneAssist(
+          pattern,
+          ownedResults.filter((result) => !isAssistCardResult(result)),
+          getAssistReplacementTypeLimit(spCardConditions)
+        )
+        : (() => {
+          const remainingPattern = { ...pattern };
+          const rentalType = rentalResult.card.param_type;
 
-      if (remainingPattern[rentalType] < 0) {
-        continue;
-      }
+          remainingPattern[rentalType] =
+            (remainingPattern[rentalType] ?? 0) - 1;
 
-      const ownCandidates = ownedResults.filter(
-        (ownedResult) =>
-          ownedResult.card.card_id !== rentalResult.card.card_id
-      );
+          if (remainingPattern[rentalType] < 0) {
+            return [];
+          }
 
-      const availableTeam = [...ownCandidates, rentalResult];
+          return [remainingPattern];
+        })();
 
-      if (!satisfiesSpCardConditions(availableTeam, spCardConditions)) {
-        continue;
-      }
+      for (const remainingPattern of rentalPatternVariants) {
+        const ownCandidates = ownedResults.filter(
+          (ownedResult) =>
+            String(ownedResult.card.card_id) !==
+            String(rentalResult.card.card_id)
+        );
 
-      const result = findBestOwnedCardsByPattern({
-        ownedResults: ownCandidates,
-        rentalResult,
-        pattern: remainingPattern,
-        spCardConditions,
-        trend,
-        abilityDb,
-        calculationContext,
-        forcedCardIds,
-      });
+        const result = findBestOwnedCardsByPattern({
+          ownedResults: ownCandidates,
+          rentalResult,
+          pattern: remainingPattern,
+          spCardConditions,
+          trend,
+          abilityDb,
+          calculationContext,
+          forcedCardIds,
+        });
 
-      if (!result) continue;
+        if (!result) continue;
 
-      const cardsWithDisplayScore = result.team.map((cardResult) => {
-        const synergyBonus =
-          result.synergyBonusByCardId?.[cardResult.card.card_id] ?? 0;
+        const cardsWithDisplayScore = result.team.map((cardResult) => {
+          const synergyBonus =
+            result.synergyBonusByCardId?.[cardResult.card.card_id] ?? 0;
 
-        return {
-          ...cardResult,
-          synergyBonus,
-          displayScore: cardResult.score + synergyBonus,
-        };
-      });
+          return {
+            ...cardResult,
+            synergyBonus,
+            displayScore: cardResult.score + synergyBonus,
+          };
+        });
 
-      const sortedCards = cardsWithDisplayScore.sort(
-        (a, b) => b.displayScore - a.displayScore
-      );
+        const sortedCards = cardsWithDisplayScore.sort(
+          (a, b) => b.displayScore - a.displayScore
+        );
 
-      if (result.totalScore > bestTotalScore) {
-        bestTotalScore = result.totalScore;
+        if (result.totalScore > bestTotalScore) {
+          bestTotalScore = result.totalScore;
 
-        bestResult = {
-          cards: sortedCards,
-          baseScore: result.baseScore,
-          synergyScore: result.synergyScore,
-          synergyBonusByCardId: result.synergyBonusByCardId,
-          totalScore: result.totalScore,
-        };
+          bestResult = {
+            cards: sortedCards,
+            baseScore: result.baseScore,
+            synergyScore: result.synergyScore,
+            synergyBonusByCardId: result.synergyBonusByCardId,
+            totalScore: result.totalScore,
+          };
+        }
       }
     }
 
@@ -1691,8 +1988,35 @@ function App() {
                 </button>
 
                 <h2>更新履歴</h2>
-                <p><strong>v1.1.2</strong></p>
+                <p><strong>v1.1.3</strong></p>
                 <span className="versionDate"> - 2026/05/26</span>
+                <p className="changelogNote">サイトに以下の機能を追加しました：</p>
+                <ul>
+                  <li>「私たちも成長していくぞ！」を追加しました</li>
+                </ul>
+                <p className="subText">
+                  新サポカのSP率は、暫定的に「全28」として計算・表示しています。
+                  <br />
+                  新サポカの特殊なSP率判定に対応したため、一部条件では計算に時間がかかる場合があります。
+                  <br />
+                  今後も計算ロジックの最適化を進めてまいります。
+                </p>
+
+                <p className="changelogNote">以下の機能・動作・表示を改善しました：</p>
+                <ul>
+                  <li>Da4枚ふわもこ軸の内容を調整しました
+                    <p>従来よりも相談Pドリンク交換の回数を増やしています。</p>
+                  </li>
+                </ul>
+
+                <p className="subText">
+                  ※HIF編の計算条件は仮設定であり、順次調整する予定です。
+                  <br />
+                  ※HIFの強化月間は未対応のため、ONにしても通常HIFと同じ条件で計算されます。
+                </p>
+
+                <p><strong>v1.1.2</strong></p>
+                <span className="versionDate"> - 2026/05/25</span>
                 <p className="changelogNote">サイトに以下の機能を追加しました：</p>
                 <ul>
                   <li>「確定編成サポカ」をレンタル枠でも指定できるようにしました</li>
@@ -1705,11 +2029,6 @@ function App() {
                   <li>おすすめ編成にサポカの凸状況を表示するようにしました</li>
                   <li>SRサポカの順番を実装順にしました</li>
                 </ul>
-                <p className="subText">
-                  ※HIF編の計算条件は仮設定であり、順次調整する予定です。
-                  <br />
-                  ※HIFの強化月間は未対応のため、ONにしても通常HIFと同じ条件で計算されます。
-                </p>
 
                 <p><strong>v1.1.1</strong></p>
                 <span className="versionDate"> - 2026/05/18</span>
@@ -2844,7 +3163,7 @@ function App() {
                                       {result.card.param_type}
                                     </span>
                                   </td>
-                                  <td>{getSpRate(result)}</td>
+                                  <td>{getSpRateDisplay(result)}</td>
                                 </tr>
                               ))}
                             </tbody>
@@ -2912,7 +3231,10 @@ function App() {
                             <td>{formatScore(result.score2)}</td>
                             <td>{formatScore(result.score3)}</td>
                             <td>{formatScore(result.score4)}</td>
-                            <td>{result.spRate}</td>
+                            <td>{getSpRateDisplay({
+                              card: result.card,
+                              limitBreak: scoreListMode === "allFour" ? 4 : result.limitBreak,
+                            })}</td>
                           </tr>
                         ))}
                       </tbody>

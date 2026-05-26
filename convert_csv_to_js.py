@@ -103,6 +103,7 @@ def convert_card_db():
                 "abilities": abilities,
                 "synergy_tags": parse_tags(row.get("synergy_tags", "")),
                 "display_order": int(row.get("display_order") or 0),
+                "sp_rate_scope": row.get("sp_rate_scope", "normal"),
             })
 
     with open(CARD_JS, "w", encoding="utf-8") as f:
