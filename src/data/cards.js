@@ -22,7 +22,8 @@ export const cards = [
       "ssr_gain"
     ],
     "display_order": 1000,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_002",
@@ -47,7 +48,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 1100,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 1
   },
   {
     "card_id": "card_003",
@@ -72,7 +74,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 1200,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_004",
@@ -97,7 +100,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 1300,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_005",
@@ -122,7 +126,8 @@ export const cards = [
       "ssr_gain"
     ],
     "display_order": 1400,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_006",
@@ -147,7 +152,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 1500,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_007",
@@ -172,7 +178,8 @@ export const cards = [
       "ssr_gain"
     ],
     "display_order": 1600,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_008",
@@ -197,7 +204,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 1700,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 1
   },
   {
     "card_id": "card_009",
@@ -222,7 +230,8 @@ export const cards = [
       "ssr_gain"
     ],
     "display_order": 1800,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_010",
@@ -247,7 +256,8 @@ export const cards = [
       "ssr_gain"
     ],
     "display_order": 1900,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_011",
@@ -272,7 +282,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 2000,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_012",
@@ -297,7 +308,8 @@ export const cards = [
       "ssr_gain"
     ],
     "display_order": 2100,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_013",
@@ -322,7 +334,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 2200,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_014",
@@ -347,7 +360,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 2300,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_015",
@@ -372,7 +386,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 2400,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 1
   },
   {
     "card_id": "card_016",
@@ -397,7 +412,8 @@ export const cards = [
       "ssr_gain"
     ],
     "display_order": 2500,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_017",
@@ -422,7 +438,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 2600,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_018",
@@ -447,7 +464,8 @@ export const cards = [
       "ssr_gain"
     ],
     "display_order": 2700,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 1
   },
   {
     "card_id": "card_019",
@@ -472,7 +490,8 @@ export const cards = [
       "ssr_gain"
     ],
     "display_order": 2800,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_020",
@@ -497,7 +516,8 @@ export const cards = [
       "ssr_gain"
     ],
     "display_order": 2900,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_021",
@@ -522,7 +542,8 @@ export const cards = [
       "ssr_gain"
     ],
     "display_order": 3000,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_022",
@@ -547,7 +568,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 3100,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_023",
@@ -572,7 +594,8 @@ export const cards = [
       "ssr_gain"
     ],
     "display_order": 3200,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_024",
@@ -597,7 +620,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 3300,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_025",
@@ -622,7 +646,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 3400,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_026",
@@ -647,7 +672,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 3500,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_027",
@@ -672,7 +698,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 3600,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_028",
@@ -697,7 +724,8 @@ export const cards = [
       "ssr_gain"
     ],
     "display_order": 3700,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 1
   },
   {
     "card_id": "card_029",
@@ -722,7 +750,8 @@ export const cards = [
       "ssr_gain"
     ],
     "display_order": 3800,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_030",
@@ -747,7 +776,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 3900,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 1
   },
   {
     "card_id": "card_031",
@@ -772,7 +802,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 4000,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_032",
@@ -797,7 +828,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 4100,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 1
   },
   {
     "card_id": "card_033",
@@ -822,7 +854,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 4200,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_034",
@@ -847,7 +880,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 4300,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_035",
@@ -872,7 +906,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 4400,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_036",
@@ -897,7 +932,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 4500,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 1
   },
   {
     "card_id": "card_037",
@@ -922,7 +958,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 4600,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 1
   },
   {
     "card_id": "card_038",
@@ -947,7 +984,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 4700,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 1
   },
   {
     "card_id": "card_039",
@@ -972,7 +1010,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 4800,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_040",
@@ -997,7 +1036,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 4900,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_041",
@@ -1022,7 +1062,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 5000,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 1
   },
   {
     "card_id": "card_042",
@@ -1047,7 +1088,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 5100,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_043",
@@ -1072,7 +1114,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 5200,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_044",
@@ -1097,7 +1140,8 @@ export const cards = [
       "ssr_gain"
     ],
     "display_order": 5300,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 1
   },
   {
     "card_id": "card_045",
@@ -1122,7 +1166,8 @@ export const cards = [
       "ssr_gain"
     ],
     "display_order": 5400,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_046",
@@ -1147,7 +1192,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 5500,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_047",
@@ -1172,7 +1218,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 5600,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_048",
@@ -1197,7 +1244,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 5700,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_049",
@@ -1222,7 +1270,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 5800,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_050",
@@ -1247,7 +1296,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 5900,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_051",
@@ -1272,7 +1322,8 @@ export const cards = [
       "ssr_gain"
     ],
     "display_order": 6000,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_052",
@@ -1297,7 +1348,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 6100,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_053",
@@ -1322,7 +1374,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 6200,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_054",
@@ -1347,7 +1400,8 @@ export const cards = [
       "ssr_gain"
     ],
     "display_order": 6300,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_055",
@@ -1372,7 +1426,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 6400,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_056",
@@ -1397,7 +1452,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 6500,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_057",
@@ -1422,7 +1478,8 @@ export const cards = [
       "ssr_gain"
     ],
     "display_order": 6600,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_058",
@@ -1447,7 +1504,8 @@ export const cards = [
       "ssr_gain"
     ],
     "display_order": 6700,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 1
   },
   {
     "card_id": "card_059",
@@ -1472,7 +1530,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 6800,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 1
   },
   {
     "card_id": "card_060",
@@ -1497,7 +1556,8 @@ export const cards = [
       "ssr_gain"
     ],
     "display_order": 6900,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_061",
@@ -1522,7 +1582,8 @@ export const cards = [
       "ssr_gain"
     ],
     "display_order": 7000,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_062",
@@ -1547,7 +1608,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 7100,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_063",
@@ -1572,7 +1634,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 7200,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_064",
@@ -1597,7 +1660,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 7300,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_065",
@@ -1622,7 +1686,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 7400,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_066",
@@ -1647,7 +1712,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 7500,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 1
   },
   {
     "card_id": "card_067",
@@ -1672,7 +1738,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 7600,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_068",
@@ -1697,7 +1764,8 @@ export const cards = [
       "ssr_gain"
     ],
     "display_order": 7700,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_069",
@@ -1722,7 +1790,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 7800,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_070",
@@ -1747,7 +1816,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 7900,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_071",
@@ -1772,7 +1842,8 @@ export const cards = [
       "ssr_gain"
     ],
     "display_order": 8000,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_072",
@@ -1797,7 +1868,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 8100,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_073",
@@ -1822,7 +1894,8 @@ export const cards = [
       "ssr_gain"
     ],
     "display_order": 8200,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_074",
@@ -1847,7 +1920,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 8300,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_075",
@@ -1872,7 +1946,8 @@ export const cards = [
       "ssr_gain"
     ],
     "display_order": 8400,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_076",
@@ -1897,7 +1972,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 8500,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_077",
@@ -1922,7 +1998,8 @@ export const cards = [
       "ssr_gain"
     ],
     "display_order": 8600,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_078",
@@ -1947,7 +2024,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 8700,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_079",
@@ -1972,7 +2050,8 @@ export const cards = [
       "ssr_gain"
     ],
     "display_order": 8800,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 1
   },
   {
     "card_id": "card_080",
@@ -1997,7 +2076,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 8900,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_081",
@@ -2022,7 +2102,8 @@ export const cards = [
       "ssr_gain"
     ],
     "display_order": 9000,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 1
   },
   {
     "card_id": "card_082",
@@ -2047,7 +2128,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 9100,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_083",
@@ -2072,7 +2154,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 9200,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_084",
@@ -2097,7 +2180,8 @@ export const cards = [
       "ssr_gain"
     ],
     "display_order": 9300,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_085",
@@ -2122,7 +2206,8 @@ export const cards = [
       "ssr_gain"
     ],
     "display_order": 9400,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_086",
@@ -2147,7 +2232,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 9500,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_087",
@@ -2172,7 +2258,8 @@ export const cards = [
       "ssr_gain"
     ],
     "display_order": 9600,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_088",
@@ -2197,7 +2284,8 @@ export const cards = [
       "ssr_gain"
     ],
     "display_order": 9700,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 1
   },
   {
     "card_id": "card_089",
@@ -2222,7 +2310,8 @@ export const cards = [
       "ssr_gain"
     ],
     "display_order": 9800,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_090",
@@ -2247,7 +2336,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 9900,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_091",
@@ -2272,7 +2362,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 10000,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_092",
@@ -2297,7 +2388,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 10100,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_093",
@@ -2322,7 +2414,8 @@ export const cards = [
       "ssr_gain"
     ],
     "display_order": 10200,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_094",
@@ -2347,7 +2440,8 @@ export const cards = [
       "ssr_gain"
     ],
     "display_order": 10300,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 1
   },
   {
     "card_id": "card_095",
@@ -2372,7 +2466,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 10400,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_096",
@@ -2397,7 +2492,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 25000,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_097",
@@ -2422,7 +2518,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 25300,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_098",
@@ -2447,7 +2544,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 24999,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_099",
@@ -2472,7 +2570,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 25600,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_100",
@@ -2497,7 +2596,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 25200,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_101",
@@ -2522,7 +2622,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 25500,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_102",
@@ -2547,7 +2648,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 25100,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_103",
@@ -2572,7 +2674,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 25700,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_104",
@@ -2597,7 +2700,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 29000,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_105",
@@ -2622,7 +2726,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 29100,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_106",
@@ -2647,7 +2752,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 25800,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_107",
@@ -2672,7 +2778,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 25400,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_108",
@@ -2697,7 +2804,8 @@ export const cards = [
       "ssr_gain"
     ],
     "display_order": 999,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_109",
@@ -2722,7 +2830,8 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 998,
-    "sp_rate_scope": "normal"
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   },
   {
     "card_id": "card_110",
@@ -2747,6 +2856,7 @@ export const cards = [
       "p_item_gain"
     ],
     "display_order": 997,
-    "sp_rate_scope": "all"
+    "sp_rate_scope": "all",
+    "is_welfare": 0
   }
 ];

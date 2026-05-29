@@ -463,6 +463,7 @@ function App() {
   ]);
 
   const [showResult, setShowResult] = useState(false);
+  const [showRecalculateNotice, setShowRecalculateNotice] = useState(false);
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem("theme") || "light";
   });
@@ -546,6 +547,36 @@ function App() {
   const [ownedSearchText, setOwnedSearchText] = useState("");
   const [ownedTypeFilter, setOwnedTypeFilter] = useState("all");
   const [ownedPlanFilter, setOwnedPlanFilter] = useState("all");
+  const [ownedSortMode, setOwnedSortMode] = useState("default");
+
+  function getOwnedLimitBreakForSort(card) {
+    if (!ownedCards?.[card.card_id]?.owned) {
+      return -1;
+    }
+
+    return Number(ownedCards?.[card.card_id]?.limitBreak ?? 0);
+  }
+
+  function compareOwnedCardsForDisplay(a, b) {
+    if (ownedSortMode === "limitBreakDesc") {
+      const aOwned = Boolean(ownedCards?.[a.card_id]?.owned);
+      const bOwned = Boolean(ownedCards?.[b.card_id]?.owned);
+
+      if (aOwned && !bOwned) return -1;
+      if (!aOwned && bOwned) return 1;
+
+      const limitBreakDiff =
+        getOwnedLimitBreakForSort(b) - getOwnedLimitBreakForSort(a);
+
+      if (limitBreakDiff !== 0) {
+        return limitBreakDiff;
+      }
+
+      return compareSupportCardDisplayOrder(a, b);
+    }
+
+    return compareSupportCardDisplayOrder(a, b);
+  }
 
   const effectiveMode = getEffectiveMode(mode, isEnhancedMode);
 
@@ -710,6 +741,12 @@ function App() {
         [key]: value,
       },
     }));
+  }
+
+  function updateRecommendedCardLimitBreak(cardId, limitBreak) {
+    updateOwnedCard(cardId, "owned", true);
+    updateOwnedCard(cardId, "limitBreak", Number(limitBreak));
+    setShowRecalculateNotice(true);
   }
 
   function resetOwnedCards() {
@@ -1510,6 +1547,21 @@ function App() {
     return "";
   }
 
+  function isWelfareCard(card) {
+    return Number(card?.is_welfare ?? 0) === 1;
+  }
+
+  function SupportCardName({ card }) {
+    return (
+      <span className="supportCardNameWithBadge">
+        <span>{card.name}</span>
+        {isWelfareCard(card) && (
+          <span className="welfareBadge">[配布]</span>
+        )}
+      </span>
+    );
+  }
+
   const filteredCards = cards.filter((card) => {
     if (plan === "sense") return card.sense === 1;
     if (plan === "motivation") return card.logic === 1;
@@ -1970,7 +2022,7 @@ function App() {
               alt="サポカ計算機"
             />
             <h1 className="mainTitle">サポカ計算機</h1>
-            <span className="version">v1.1.2 - レンタル枠固定・おすすめ編成の凸数表示に対応しました</span>
+            <span className="version">v1.1.4 - 並び替え機能・おすすめ編成からの凸変更に対応</span>
             <p className="appDescription">
               所持サポカからおすすめ上位6枚を自動計算します。
             </p>
@@ -1988,6 +2040,25 @@ function App() {
                 </button>
 
                 <h2>更新履歴</h2>
+                <p><strong>v1.1.4</strong></p>
+                <span className="versionDate"> - 2026/05/29</span>
+                <p className="changelogNote">サイトに以下の機能を追加しました：</p>
+                <ul>
+                  <li>おすすめ編成から凸状況を変更できるようにしました</li>
+                  <li>「所持サポカ登録」に並び替え機能を追加しました</li>
+                </ul>
+
+                <p className="changelogNote">以下の表示を改善しました：</p>
+                <ul>
+                  <li>「所持サポカ登録」で配布サポカが分かりやすくなるようにしました</li>
+                </ul>
+
+                <p className="subText">
+                  ※HIF編の計算条件は仮設定であり、順次調整する予定です。
+                  <br />
+                  ※HIFの強化月間は未対応のため、ONにしても通常HIFと同じ条件で計算されます。
+                </p>
+
                 <p><strong>v1.1.3</strong></p>
                 <span className="versionDate"> - 2026/05/26</span>
                 <p className="changelogNote">サイトに以下の機能を追加しました：</p>
@@ -1995,7 +2066,7 @@ function App() {
                   <li>「私たちも成長していくぞ！」を追加しました</li>
                 </ul>
                 <p className="subText">
-                  新サポカのSP率は、暫定的に「全28」として計算・表示しています。
+                  新サポカのSP率は、凸数にかかわらず暫定的に「全28」として計算・表示しています。
                   <br />
                   新サポカの特殊なSP率判定に対応したため、一部条件では計算に時間がかかる場合があります。
                   <br />
@@ -2008,12 +2079,6 @@ function App() {
                     <p>従来よりも相談Pドリンク交換の回数を増やしています。</p>
                   </li>
                 </ul>
-
-                <p className="subText">
-                  ※HIF編の計算条件は仮設定であり、順次調整する予定です。
-                  <br />
-                  ※HIFの強化月間は未対応のため、ONにしても通常HIFと同じ条件で計算されます。
-                </p>
 
                 <p><strong>v1.1.2</strong></p>
                 <span className="versionDate"> - 2026/05/25</span>
@@ -3097,6 +3162,7 @@ function App() {
                 hifManualDeckPattern,
               });
               setShowResult(true);
+              setShowRecalculateNotice(false);
             }}
           >
             計算開始
@@ -3156,7 +3222,28 @@ function App() {
                                 <tr key={result.card.card_id}>
                                   <td>{result.isRental ? "○" : ""}</td>
                                   <td>{result.card.name}</td>
-                                  <td>{result.limitBreak}凸</td>
+                                  <td>
+                                    {result.isRental ? (
+                                      `${result.limitBreak}凸`
+                                    ) : (
+                                      <select
+                                        className="recommendLimitBreakSelect"
+                                        value={ownedCards?.[result.card.card_id]?.limitBreak ?? result.limitBreak ?? 0}
+                                        onChange={(e) =>
+                                          updateRecommendedCardLimitBreak(
+                                            result.card.card_id,
+                                            e.target.value
+                                          )
+                                        }
+                                      >
+                                        {[0, 1, 2, 3, 4].map((limitBreak) => (
+                                          <option key={limitBreak} value={limitBreak}>
+                                            {limitBreak}凸
+                                          </option>
+                                        ))}
+                                      </select>
+                                    )}
+                                  </td>
                                   <td>{formatScore(result.displayScore ?? result.score)}</td>
                                   <td>
                                     <span className={`paramTypeBadge ${getParamTypeClass(result.card.param_type)}`}>
@@ -3362,12 +3449,22 @@ function App() {
                 <option value="anomaly">アノマリー</option>
               </select>
             </label>
+            <label>
+              並び順
+              <select
+                value={ownedSortMode}
+                onChange={(e) => setOwnedSortMode(e.target.value)}
+              >
+                <option value="default">標準</option>
+                <option value="limitBreakDesc">凸数が高い順</option>
+              </select>
+            </label>
           </div>
 
           <div className="ownedList">
             {filteredOwnedCards
               .slice()
-              .sort(compareSupportCardDisplayOrder)
+              .sort(compareOwnedCardsForDisplay)
               .map((card) => {
 
                 const owned = ownedCards[card.card_id]?.owned ?? false;
@@ -3388,7 +3485,7 @@ function App() {
                           updateOwnedCard(card.card_id, "owned", e.target.checked)
                         }
                       />
-                      <span>{card.name}</span>
+                      <SupportCardName card={card} />
                     </div>
 
                     <span className={`ownedType ${getParamTypeClass(card.param_type)}`}>
@@ -3418,6 +3515,28 @@ function App() {
           </div>
         </section>
       </div>
+      {showRecalculateNotice && (
+        <div className="recalculateNoticeBanner">
+          <span className="recalculateNoticeText recalculateNoticeTextPc">
+            凸数を変更しました。点数・おすすめ結果に反映するには「計算開始」を押してください。
+          </span>
+
+          <span className="recalculateNoticeText recalculateNoticeTextSp">
+            凸数を変更しました。点数・おすすめ結果に反映するには
+            <br />
+            「計算開始」を押してください。
+          </span>
+
+          <button
+            type="button"
+            className="recalculateNoticeCloseButton"
+            onClick={() => setShowRecalculateNotice(false)}
+            aria-label="再計算案内を閉じる"
+          >
+            ×
+          </button>
+        </div>
+      )}
     </main>
   );
 }
