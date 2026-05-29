@@ -214,6 +214,8 @@ const ASSIST_REPLACEMENT_TYPE_LIMIT_WITHOUT_SP_CONDITION = 1;
 const RENTAL_CANDIDATE_LIMIT = 10;
 const RENTAL_CANDIDATE_LIMIT_WITHOUT_SP_CONDITION = 8;
 
+const ASSIST_HEAVY_LESSON_THRESHOLD = 7;
+const ASSIST_REPLACEMENT_PARAM_TYPES = TYPE_ORDER;
 
 const BASE_MODE_KEYS = ["hif", "legend"];
 
@@ -858,6 +860,68 @@ function App() {
       ? ASSIST_REPLACEMENT_TYPE_LIMIT
       : ASSIST_REPLACEMENT_TYPE_LIMIT_WITHOUT_SP_CONDITION;
   }
+  function getContextCountValue(context, key) {
+    const value = Number(context?.[key] ?? 0);
+    return Number.isFinite(value) ? value : 0;
+  }
+
+  function getAssistLessonCountForParamType(context, paramType) {
+    const lowerParamType = String(paramType).toLowerCase();
+
+    const lessonKey = `lesson_${lowerParamType}_count`;
+    const spKey = `sp_${lowerParamType}_count`;
+
+    if (Object.prototype.hasOwnProperty.call(context ?? {}, lessonKey)) {
+      return getContextCountValue(context, lessonKey);
+    }
+
+    return getContextCountValue(context, spKey);
+  }
+
+  function getHeavyLessonParamTypesForAssist(context) {
+    const counts = ASSIST_REPLACEMENT_PARAM_TYPES.map((paramType) => ({
+      paramType,
+      count: getAssistLessonCountForParamType(context, paramType),
+    }));
+
+    const heavyCounts = counts.filter(
+      ({ count }) => count >= ASSIST_HEAVY_LESSON_THRESHOLD
+    );
+
+    if (heavyCounts.length === 0) {
+      return [];
+    }
+
+    const maxCount = Math.max(...heavyCounts.map(({ count }) => count));
+
+    return heavyCounts
+      .filter(({ count }) => count === maxCount)
+      .map(({ paramType }) => paramType);
+  }
+
+  function getAssistReplacementTypesForContext({
+    context,
+    spCardConditions,
+    replacementTypeCandidates,
+  }) {
+    const candidates = (
+      replacementTypeCandidates?.length > 0
+        ? replacementTypeCandidates
+        : ASSIST_REPLACEMENT_PARAM_TYPES
+    ).filter((paramType) => TYPE_ORDER.includes(paramType));
+
+    const heavyParamTypes = getHeavyLessonParamTypesForAssist(context);
+
+    if (heavyParamTypes.length > 0) {
+      return candidates.filter((paramType) =>
+        heavyParamTypes.includes(paramType)
+      );
+    }
+
+    const limit = getAssistReplacementTypeLimit(spCardConditions);
+
+    return candidates.slice(0, limit);
+  }
 
   function getRentalCandidateLimit(spCardConditions) {
     return hasAnySpCardCondition(spCardConditions)
@@ -868,7 +932,10 @@ function App() {
   function createPatternVariantsWithOneAssist(
     pattern,
     normalResults,
-    replacementTypeLimit = ASSIST_REPLACEMENT_TYPE_LIMIT
+    {
+      context,
+      spCardConditions,
+    } = {}
   ) {
     const replaceableTypes = TYPE_ORDER.filter(
       (cardType) => Number(pattern?.[cardType] ?? 0) > 0
@@ -883,7 +950,8 @@ function App() {
           .sort((a, b) => b.score - a.score);
 
         const replacedCardScore =
-          sortedTypeResults[requiredCount - 1]?.score ?? Number.POSITIVE_INFINITY;
+          sortedTypeResults[requiredCount - 1]?.score ??
+          Number.POSITIVE_INFINITY;
 
         return {
           cardType,
@@ -892,12 +960,20 @@ function App() {
       })
       .sort((a, b) => a.replacedCardScore - b.replacedCardScore);
 
-    return scoredReplaceableTypes
-      .slice(0, replacementTypeLimit)
-      .map(({ cardType }) => ({
-        ...pattern,
-        [cardType]: Number(pattern[cardType] ?? 0) - 1,
-      }));
+    const replacementTypeCandidates = scoredReplaceableTypes.map(
+      ({ cardType }) => cardType
+    );
+
+    const assistReplacementTypes = getAssistReplacementTypesForContext({
+      context,
+      spCardConditions,
+      replacementTypeCandidates,
+    });
+
+    return assistReplacementTypes.map((cardType) => ({
+      ...pattern,
+      [cardType]: Number(pattern[cardType] ?? 0) - 1,
+    }));
   }
 
   function mergeUniqueResultsByCardId(results) {
@@ -1272,16 +1348,16 @@ function App() {
       .sort((a, b) => b.score - a.score)
       .slice(0, 1);
 
-    const assistReplacementTypeLimit =
-      getAssistReplacementTypeLimit(spCardConditions);
-
     const assistOptions = [];
 
     if (rentalIsAssist) {
       const patternVariants = createPatternVariantsWithOneAssist(
         remainingPattern,
         selectableNormalResults,
-        assistReplacementTypeLimit
+        {
+          context: calculationContext,
+          spCardConditions,
+        }
       );
 
       patternVariants.forEach((patternVariant) => {
@@ -1295,7 +1371,10 @@ function App() {
       const patternVariants = createPatternVariantsWithOneAssist(
         remainingPattern,
         selectableNormalResults,
-        assistReplacementTypeLimit
+        {
+          context: calculationContext,
+          spCardConditions,
+        }
       );
 
       patternVariants.forEach((patternVariant) => {
@@ -1316,7 +1395,10 @@ function App() {
         const patternVariants = createPatternVariantsWithOneAssist(
           remainingPattern,
           selectableNormalResults,
-          assistReplacementTypeLimit
+          {
+            context: calculationContext,
+            spCardConditions,
+          }
         );
 
         patternVariants.forEach((patternVariant) => {
@@ -1689,7 +1771,10 @@ function App() {
         ? createPatternVariantsWithOneAssist(
           pattern,
           ownedResults.filter((result) => !isAssistCardResult(result)),
-          getAssistReplacementTypeLimit(spCardConditions)
+          {
+            context: calculationContext,
+            spCardConditions,
+          }
         )
         : (() => {
           const remainingPattern = { ...pattern };
@@ -2048,9 +2133,10 @@ function App() {
                   <li>「所持サポカ登録」に並び替え機能を追加しました</li>
                 </ul>
 
-                <p className="changelogNote">以下の表示を改善しました：</p>
+                <p className="changelogNote">以下の機能・動作・表示を改善しました：</p>
                 <ul>
                   <li>「所持サポカ登録」で配布サポカが分かりやすくなるようにしました</li>
+                  <li>  （追記）1属性を多く踏む設定で、アシストサポカを含むおすすめ編成が実戦に近い構成になるよう調整しました</li>
                 </ul>
 
                 <p className="subText">

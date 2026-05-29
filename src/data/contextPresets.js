@@ -1877,23 +1877,23 @@ export const HIF_EXAM_RATIO_PRESETS = {
     voSpecialized: {
         label: "Vo特化",
         ratiosByType: {
-            voda: { vo: 8, da: 3, vi: 2 },
-            vovi: { vo: 8, da: 2, vi: 3 },
+            voda: { vo: 8, da: 2, vi: 1 },
+            vovi: { vo: 8, da: 1, vi: 2 },
         },
     },
 
     daSpecialized: {
         label: "Da特化",
         ratiosByType: {
-            voda: { vo: 3, da: 8, vi: 2 },
-            davi: { vo: 2, da: 8, vi: 3 },
+            voda: { vo: 2, da: 8, vi: 1 },
+            davi: { vo: 1, da: 8, vi: 2 },
         },
     },
     viSpecialized: {
         label: "Vi特化",
         ratiosByType: {
-            vovi: { vo: 3, da: 2, vi: 8 },
-            davi: { vo: 2, da: 3, vi: 8 },
+            vovi: { vo: 2, da: 1, vi: 8 },
+            davi: { vo: 1, da: 2, vi: 8 },
         },
     },
 
@@ -1901,8 +1901,8 @@ export const HIF_EXAM_RATIO_PRESETS = {
         label: "Vo or Vi特化（Da溢れ対策）",
         onlyHifVariant: "fuwamokoDa4",
         ratiosByType: {
-            voda: { vo: 8, da: 1, vi: 1 },
-            davi: { vo: 1, da: 1, vi: 8 },
+            voda: { vo: 9, da: 0, vi: 1 },
+            davi: { vo: 1, da: 0, vi: 9 },
         },
     },
 
