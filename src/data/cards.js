@@ -283,7 +283,7 @@ export const cards = [
     ],
     "display_order": 2000,
     "sp_rate_scope": "normal",
-    "is_welfare": 0
+    "is_welfare": 1
   },
   {
     "card_id": "card_012",

@@ -2136,7 +2136,8 @@ function App() {
                 <p className="changelogNote">以下の機能・動作・表示を改善しました：</p>
                 <ul>
                   <li>「所持サポカ登録」で配布サポカが分かりやすくなるようにしました</li>
-                  <li>  （追記）1属性を多く踏む設定で、アシストサポカを含むおすすめ編成が実戦に近い構成になるよう調整しました</li>
+                  <li>（追記）「オシャレもメイクも♪」を配布サポカとして登録しました</li>
+                  <li>（追記）1属性を多く踏む設定で、アシストサポカを含むおすすめ編成が実戦に近い構成になるよう調整しました</li>
                 </ul>
 
                 <p className="subText">
@@ -2290,6 +2291,17 @@ function App() {
                 </p>
 
                 <ul className="statusList">
+                  <li>
+                    <p className="statusTitle">
+                      コンテスト厳選向けのプレイ方針プリセットが欲しい
+                    </p>
+                    <div className="statusBody">
+                      <p>コンテスト厳選は道中の踏み方や第一流行・第二流行の区別の必要性など、通常の評価値育成とは異なる部分が多々あります。</p>
+                      <p>HIFでのコンテスト厳選の立ち回りを確認したうえで対応したいため、実装まで少し時間がかかる見込みです。ご了承ください。</p>
+                      <span className="versionDate"> - 2026/05/30</span>
+                    </div>
+                  </li>
+
                   <li>
                     <p className="statusTitle">
                       所持サポカ登録でSR・配布サポカの順番が違う
