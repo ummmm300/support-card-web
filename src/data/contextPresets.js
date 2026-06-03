@@ -1881,23 +1881,23 @@ export const HIF_EXAM_RATIO_PRESETS = {
     voSpecialized: {
         label: "Vo特化",
         ratiosByType: {
-            voda: { vo: 8, da: 2, vi: 1 },
-            vovi: { vo: 8, da: 1, vi: 2 },
+            voda: { vo: 9, da: 0, vi: 1 },
+            vovi: { vo: 9, da: 0, vi: 1 },
         },
     },
 
     daSpecialized: {
         label: "Da特化",
         ratiosByType: {
-            voda: { vo: 2, da: 8, vi: 1 },
-            davi: { vo: 1, da: 8, vi: 2 },
+            voda: { vo: 1, da: 9, vi: 0 },
+            davi: { vo: 0, da: 9, vi: 1 },
         },
     },
     viSpecialized: {
         label: "Vi特化",
         ratiosByType: {
-            vovi: { vo: 2, da: 1, vi: 8 },
-            davi: { vo: 1, da: 2, vi: 8 },
+            vovi: { vo: 1, da: 0, vi: 9 },
+            davi: { vo: 1, da: 0, vi: 9 },
         },
     },
 
