@@ -2858,5 +2858,31 @@ export const cards = [
     "display_order": 997,
     "sp_rate_scope": "all",
     "is_welfare": 0
+  },
+  {
+    "card_id": "card_111",
+    "name": "私を楽しませろ",
+    "rarity": "SSR",
+    "ability_tier": "SSR",
+    "param_type": "Da",
+    "sp_rate": 28,
+    "sense": 0,
+    "logic": 1,
+    "anomaly": 0,
+    "rental_candidate": 1,
+    "abilities": [
+      "param_bonus_da_id",
+      "sp_rate_id",
+      "on_supply_2times_id",
+      "on_enhance_M_id",
+      "on_param_event_id",
+      "none_id"
+    ],
+    "synergy_tags": [
+      "ssr_gain"
+    ],
+    "display_order": 996,
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   }
 ];

@@ -733,10 +733,16 @@ function App() {
       return baseContext;
     }
 
-    const contextWithHifVariant = {
-      ...baseContext,
-      ...getHifVariantContextOverrides(hifVariant, type),
-    };
+    const contextWithHifVariant =
+      hifVariant === "manual"
+        ? {
+          ...baseContext,
+          ...hifManualContextOverrides,
+        }
+        : {
+          ...baseContext,
+          ...getHifVariantContextOverrides(hifVariant, type),
+        };
 
     return applyHifExamParamsToContext({
       context: contextWithHifVariant,
@@ -749,9 +755,9 @@ function App() {
     plan,
     type,
     hifVariant,
+    hifManualContextOverrides,
     hifExamRatioPreset,
     hifManualExamRatio,
-    hifManualContextOverrides,
   ]);
 
   function updateOwnedCard(cardId, key, value) {
@@ -2242,6 +2248,24 @@ function App() {
                 </button>
 
                 <h2>更新履歴</h2>
+                <p><strong>v1.1.6</strong></p>
+                <span className="versionDate"> - 2026/06/05</span>
+                <p className="changelogNote">サイトに以下の機能を追加しました：</p>
+                <ul>
+                  <li>「私を楽しませろ」を追加しました</li>
+                </ul>
+                <p className="subText">
+                  ※HIF編の計算条件は仮設定であり、順次調整する予定です。
+                  <br />
+                  ※HIFの強化月間は未対応のため、ONにしても通常HIFと同じ条件で計算されます。
+                </p>
+
+                <p className="subText">
+                  Vo特化は"9:0:1"、Vi特化は"1:0:9"に統一しました。
+                  <br />
+                  パラメータ上限の観点から、手動調整からDaサポカを4枚以上指定した場合はVo特化またはVi特化で指定することをおすすめします。
+                </p>
+
                 <p><strong>v1.1.5</strong></p>
                 <span className="versionDate"> - 2026/06/03</span>
                 <p className="changelogNote">以下の機能・動作を改善しました：</p>

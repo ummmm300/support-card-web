@@ -109,3 +109,4 @@ card_107,ピコピコでボーン,SR,SR,0,Da,0,0,1,param_bonus_da_id,get_reserve
 card_108,あなたとふたり、電車で,SSR,SSR,28,Vo,0,0,1,flat_vo_id,sp_rate_id,on_sp_20_id,get_ssr_id,on_param_event_id,none_id,1,1,ssr_gain,999,normal,0,
 card_109,……騒々しいお祭りね,SSR,SSR,0,Vi,1,0,0,param_bonus_vi_id,on_exam_end_id,on_outing_2times_id,on_sp_vi_id,on_param_event_id,none_id,1,1,p_item_gain,998,normal,0,
 card_110,私たちも成長していくぞ！,SSR,SSR,28,As,1,1,1,none_id,on_supply_2times_id,on_consult_2times_id,on_outing_2times_id,none_id,none_id,1,1,p_item_gain,997,all,0,3種SP
+card_111,私を楽しませろ,SSR,SSR,28,Da,0,1,0,param_bonus_da_id,sp_rate_id,on_supply_2times_id,on_enhance_M_id,on_param_event_id,none_id,1,1,ssr_gain,996,normal,0,SP
