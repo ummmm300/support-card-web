@@ -197,6 +197,17 @@ export const abilityDb = {
     ],
     "limit_count": -1
   },
+  "on_delete_4times_id__SSR": {
+    "kind": "on_delete",
+    "values": [
+      15.0,
+      20.0,
+      20.0,
+      20.0,
+      20.0
+    ],
+    "limit_count": 4.0
+  },
   "on_delete_A_id__SSR": {
     "kind": "on_delete_A",
     "values": [
@@ -306,6 +317,17 @@ export const abilityDb = {
       4.0
     ],
     "limit_count": -1
+  },
+  "get_impression_8cards_id__SSR": {
+    "kind": "get_impression",
+    "values": [
+      16.0,
+      22.0,
+      22.0,
+      22.0,
+      22.0
+    ],
+    "limit_count": 4.0
   },
   "get_reserve_id__SSR": {
     "kind": "get_reserve",
@@ -442,13 +464,24 @@ export const abilityDb = {
   "on_special_training_id__SSR": {
     "kind": "on_special_training",
     "values": [
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0
+      18.0,
+      25.0,
+      25.0,
+      25.0,
+      25.0
     ],
     "limit_count": 3.0
+  },
+  "__": {
+    "kind": "",
+    "values": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "limit_count": -1
   },
   "get_drink_id__SSR": {
     "kind": "get_drink",

@@ -2884,5 +2884,83 @@ export const cards = [
     "display_order": 996,
     "sp_rate_scope": "normal",
     "is_welfare": 0
+  },
+  {
+    "card_id": "card_112",
+    "name": "どーなっちゃうの～？",
+    "rarity": "SSR",
+    "ability_tier": "SSR",
+    "param_type": "Vi",
+    "sp_rate": 0,
+    "sense": 0,
+    "logic": 0,
+    "anomaly": 1,
+    "rental_candidate": 0,
+    "abilities": [
+      "param_bonus_da_id",
+      "on_special_training_id",
+      "on_sp_vi_id",
+      "on_supply_2times_id",
+      "on_param_event_id",
+      "none_id"
+    ],
+    "synergy_tags": [
+      "p_item_gain"
+    ],
+    "display_order": 996,
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
+  },
+  {
+    "card_id": "card_113",
+    "name": "おでん、通りま～すッ！",
+    "rarity": "SSR",
+    "ability_tier": "SSR",
+    "param_type": "Vi",
+    "sp_rate": 0,
+    "sense": 0,
+    "logic": 0,
+    "anomaly": 1,
+    "rental_candidate": 0,
+    "abilities": [
+      "param_bonus_da_id",
+      "get_ssr_id",
+      "on_sp_vi_id",
+      "on_outing_2times_id",
+      "on_param_event_id",
+      "none_id"
+    ],
+    "synergy_tags": [
+      "ssr_gain"
+    ],
+    "display_order": 995,
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
+  },
+  {
+    "card_id": "card_114",
+    "name": "次の曲は～ッあの曲だ！！",
+    "rarity": "SSR",
+    "ability_tier": "SSR",
+    "param_type": "Vo",
+    "sp_rate": 0,
+    "sense": 0,
+    "logic": 1,
+    "anomaly": 0,
+    "rental_candidate": 1,
+    "abilities": [
+      "param_bonus_da_id",
+      "on_delete_4times_id",
+      "on_sp_vo_id",
+      "get_impression_8cards_id",
+      "on_param_event_id",
+      "none_id"
+    ],
+    "synergy_tags": [
+      "p_item_gain"
+    ],
+    "display_order": 994,
+    "sp_rate_scope": "normal",
+    "is_welfare": 0
   }
 ];
