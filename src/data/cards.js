@@ -2907,7 +2907,7 @@ export const cards = [
     "synergy_tags": [
       "p_item_gain"
     ],
-    "display_order": 996,
+    "display_order": 995,
     "sp_rate_scope": "normal",
     "is_welfare": 0
   },
@@ -2933,7 +2933,7 @@ export const cards = [
     "synergy_tags": [
       "ssr_gain"
     ],
-    "display_order": 995,
+    "display_order": 994,
     "sp_rate_scope": "normal",
     "is_welfare": 0
   },
@@ -2959,7 +2959,7 @@ export const cards = [
     "synergy_tags": [
       "p_item_gain"
     ],
-    "display_order": 994,
+    "display_order": 993,
     "sp_rate_scope": "normal",
     "is_welfare": 0
   }

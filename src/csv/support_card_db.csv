@@ -110,6 +110,6 @@ card_108,あなたとふたり、電車で,SSR,SSR,28,Vo,0,0,1,flat_vo_id,sp_rat
 card_109,……騒々しいお祭りね,SSR,SSR,0,Vi,1,0,0,param_bonus_vi_id,on_exam_end_id,on_outing_2times_id,on_sp_vi_id,on_param_event_id,none_id,1,1,p_item_gain,998,normal,0,
 card_110,私たちも成長していくぞ！,SSR,SSR,28,As,1,1,1,none_id,on_supply_2times_id,on_consult_2times_id,on_outing_2times_id,none_id,none_id,1,1,p_item_gain,997,all,0,3種SP
 card_111,私を楽しませろ,SSR,SSR,28,Da,0,1,0,param_bonus_da_id,sp_rate_id,on_supply_2times_id,on_enhance_M_id,on_param_event_id,none_id,1,1,ssr_gain,996,normal,0,SP
-card_112,どーなっちゃうの～？,SSR,SSR,0,Vi,0,0,1,param_bonus_da_id,on_special_training_id,on_sp_vi_id,on_supply_2times_id,on_param_event_id,none_id,,1,p_item_gain,996,normal,0,
-card_113,おでん、通りま～すッ！,SSR,SSR,0,Vi,0,0,1,param_bonus_da_id,get_ssr_id,on_sp_vi_id,on_outing_2times_id,on_param_event_id,none_id,,,ssr_gain,995,normal,0,
-card_114,次の曲は～ッあの曲だ！！,SSR,SSR,0,Vo,0,1,0,param_bonus_da_id,on_delete_4times_id,on_sp_vo_id,get_impression_8cards_id,on_param_event_id,none_id,1,,p_item_gain,994,normal,0,
+card_112,どーなっちゃうの～？,SSR,SSR,0,Vi,0,0,1,param_bonus_da_id,on_special_training_id,on_sp_vi_id,on_supply_2times_id,on_param_event_id,none_id,,1,p_item_gain,995,normal,0,
+card_113,おでん、通りま～すッ！,SSR,SSR,0,Vi,0,0,1,param_bonus_da_id,get_ssr_id,on_sp_vi_id,on_outing_2times_id,on_param_event_id,none_id,,,ssr_gain,994,normal,0,
+card_114,次の曲は～ッあの曲だ！！,SSR,SSR,0,Vo,0,1,0,param_bonus_da_id,on_delete_4times_id,on_sp_vo_id,get_impression_8cards_id,on_param_event_id,none_id,1,,p_item_gain,993,normal,0,

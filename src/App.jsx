@@ -266,6 +266,101 @@ function compareSupportCardDisplayOrder(a, b) {
 
 const FUWAMOKO_HIF_VARIANT_KEY = "fuwamokoDa4";
 
+const FOUR_STACK_NONE = "";
+const FOUR_STACK_CARD_COUNT = 4;
+
+const FOUR_STACK_TYPE_LABELS = {
+  [FOUR_STACK_NONE]: "指定なし",
+  Vo: "Voサポカを4枚採用",
+  Da: "Daサポカを4枚採用",
+  Vi: "Viサポカを4枚採用",
+};
+
+function getDefaultHifFourStackType(trend, hifVariant) {
+  if (hifVariant === FUWAMOKO_HIF_VARIANT_KEY) {
+    return "Da";
+  }
+
+  const trendTypes = TREND_TO_TYPES[trend] ?? [];
+
+  return trendTypes.includes("Da") ? "Da" : FOUR_STACK_NONE;
+}
+
+function getHifFourStackTypeOptions(trend, hifVariant) {
+  if (hifVariant === FUWAMOKO_HIF_VARIANT_KEY) {
+    return [FOUR_STACK_NONE, "Da"];
+  }
+
+  const validTypes = TREND_TO_VALID_SP_TYPES[trend] ?? [];
+
+  return [FOUR_STACK_NONE, ...validTypes];
+}
+
+function normalizeHifFourStackType(fourStackType, trend, hifVariant) {
+  const options = getHifFourStackTypeOptions(trend, hifVariant);
+
+  return options.includes(fourStackType)
+    ? fourStackType
+    : getDefaultHifFourStackType(trend, hifVariant);
+}
+
+function createGenericFourStackPatternEntries(fourStackType) {
+  if (!fourStackType) {
+    return [];
+  }
+
+  const otherTypes = TYPE_ORDER.filter(
+    (cardType) => cardType !== fourStackType
+  );
+
+  const entries = [];
+
+  for (let firstOtherCount = 0; firstOtherCount <= 2; firstOtherCount++) {
+    const secondOtherCount = 2 - firstOtherCount;
+
+    const pattern = {
+      Vo: 0,
+      Da: 0,
+      Vi: 0,
+      [fourStackType]: FOUR_STACK_CARD_COUNT,
+      [otherTypes[0]]: firstOtherCount,
+      [otherTypes[1]]: secondOtherCount,
+    };
+
+    entries.push({
+      patternName: `${pattern.Vo}/${pattern.Da}/${pattern.Vi}`,
+      patternOverride: pattern,
+      patternKind: "fourStack",
+    });
+  }
+
+  return entries;
+}
+
+function createHifFourStackPatternEntries({
+  fourStackType,
+  trend,
+  hifVariant,
+}) {
+  if (!fourStackType) {
+    return [];
+  }
+
+  // ふわもこ軸は既存のDa4専用パターンを維持する
+  if (
+    hifVariant === FUWAMOKO_HIF_VARIANT_KEY &&
+    fourStackType === "Da"
+  ) {
+    return (SPECIAL_HIF_DA4_PATTERNS[trend] ?? []).map((patternConfig) => ({
+      patternName: patternConfig.patternName,
+      patternOverride: patternConfig.pattern,
+      patternKind: "fourStack",
+    }));
+  }
+
+  return createGenericFourStackPatternEntries(fourStackType);
+}
+
 const FUWAMOKO_EFFECT_KEY = "supportCardG";
 
 const SP_MIN_MANUAL_VALUE = "manual";
@@ -281,15 +376,6 @@ const TOTAL_TO_SP_LESSON_COUNT_KEY = {
   lesson_da_count: "sp_da_count",
   lesson_vi_count: "sp_vi_count",
 };
-
-function createDefaultManualDeckPattern() {
-  return {
-    useNormalPatterns: true,
-    vo: 0,
-    da: 0,
-    vi: 0,
-  };
-}
 
 function createDefaultManualSpCardConditions() {
   return {
@@ -333,6 +419,9 @@ function App() {
   );
   const [isEnhancedMode, setIsEnhancedMode] = useState(false);
   const [hifVariant, setHifVariant] = useState("standard");
+  const [hifFourStackType, setHifFourStackType] = useState(() =>
+    getDefaultHifFourStackType("voda", "standard")
+  );
   const [hifExamRatioPreset, setHifExamRatioPreset] = useState("trendPair");
 
   const [hifManualExamRatio, setHifManualExamRatio] = useState({
@@ -340,10 +429,6 @@ function App() {
     da: 4,
     vi: 1,
   });
-
-  const [hifManualDeckPattern, setHifManualDeckPattern] = useState(
-    createDefaultManualDeckPattern
-  );
 
   const [hifManualContextOverrides, setHifManualContextOverrides] = useState({});
 
@@ -375,7 +460,6 @@ function App() {
       da: 4,
       vi: 1,
     },
-    hifManualDeckPattern: createDefaultManualDeckPattern(),
     isSpecialItemEffectEnabled: false,
     specialItemEffectCounts: createDefaultSpecialItemEffectCounts(),
     generalEffectCounts: createDefaultGeneralEffectCounts(),
@@ -383,6 +467,7 @@ function App() {
     fixedRentalCardId: "",
     hifManualContextOverrides: {},
     manualSpCardConditions: createDefaultManualSpCardConditions(),
+    hifFourStackType: getDefaultHifFourStackType("voda", "standard"),
   });
 
   const [fixedCardSearchText, setFixedCardSearchText] = useState("");
@@ -642,6 +727,14 @@ function App() {
     return allTypes;
   }, [effectiveMode, plan, mode, hifVariant]);
 
+  useEffect(() => {
+    if (mode !== "hif") return;
+
+    setHifFourStackType((prev) =>
+      normalizeHifFourStackType(prev, type, hifVariant)
+    );
+  }, [mode, type, hifVariant]);
+
   const validManualSpTypes = TREND_TO_VALID_SP_TYPES[type] ?? [];
 
   useEffect(() => {
@@ -656,6 +749,9 @@ function App() {
 
     if (nextType) {
       setType(nextType);
+      setHifFourStackType(
+        getDefaultHifFourStackType(nextType, hifVariant)
+      );
     }
   }, [mode, hifVariant, type, availableTypesForCurrentSelection]);
 
@@ -1227,28 +1323,11 @@ function App() {
     );
   }
 
-  function createHifManualDeckPatternFromVariant(variantKey, targetType) {
-    if (variantKey === FUWAMOKO_HIF_VARIANT_KEY) {
-      return {
-        useNormalPatterns: false,
-        vo: 0,
-        da: 4,
-        vi: 0,
-      };
-    }
-
-    return createDefaultManualDeckPattern();
-  }
-
   function initializeHifManualSettingsFromVariant(variantKey, targetType) {
     setHifManualBaseVariant(variantKey || "standard");
 
     setHifManualContextOverrides(
       createHifManualContextOverridesFromVariant(variantKey, targetType)
-    );
-
-    setHifManualDeckPattern(
-      createHifManualDeckPatternFromVariant(variantKey, targetType)
     );
   }
 
@@ -1261,6 +1340,12 @@ function App() {
       setHifManualBaseVariant("standard");
     }
 
+    if (nextVariant !== "manual") {
+      setHifFourStackType(
+        getDefaultHifFourStackType(type, nextVariant)
+      );
+    }
+
     setHifVariant(nextVariant);
   }
 
@@ -1269,70 +1354,6 @@ function App() {
     const counts = PATTERN_COUNTS[patternName];
 
     return Object.fromEntries(types.map((t, index) => [t, counts[index]]));
-  }
-
-  function getManualDeckMinCounts(manualDeckPattern) {
-    return {
-      Vo: Number(manualDeckPattern?.vo ?? 0),
-      Da: Number(manualDeckPattern?.da ?? 0),
-      Vi: Number(manualDeckPattern?.vi ?? 0),
-    };
-  }
-
-  function getManualDeckMinCountTotal(manualDeckPattern) {
-    const minCounts = getManualDeckMinCounts(manualDeckPattern);
-
-    return TYPE_ORDER.reduce(
-      (sum, cardType) => sum + Number(minCounts[cardType] ?? 0),
-      0
-    );
-  }
-
-  function isValidManualDeckPattern(manualDeckPattern) {
-    return getManualDeckMinCountTotal(manualDeckPattern) <= DECK_CARD_COUNT;
-  }
-
-  function createManualDeckPatternEntries(manualDeckPattern) {
-    if (!isValidManualDeckPattern(manualDeckPattern)) {
-      return [];
-    }
-
-    const minCounts = getManualDeckMinCounts(manualDeckPattern);
-    const entries = [];
-
-    for (let vo = 0; vo <= MANUAL_DECK_PARAM_TYPE_MAX_COUNT; vo++) {
-      for (let da = 0; da <= MANUAL_DECK_PARAM_TYPE_MAX_COUNT; da++) {
-        for (let vi = 0; vi <= MANUAL_DECK_PARAM_TYPE_MAX_COUNT; vi++) {
-          if (vo + da + vi !== DECK_CARD_COUNT) {
-            continue;
-          }
-
-          const pattern = {
-            Vo: vo,
-            Da: da,
-            Vi: vi,
-          };
-
-          const satisfiesMinCounts = TYPE_ORDER.every(
-            (cardType) =>
-              Number(pattern[cardType] ?? 0) >=
-              Number(minCounts[cardType] ?? 0)
-          );
-
-          if (!satisfiesMinCounts) {
-            continue;
-          }
-
-          entries.push({
-            patternName: `${vo}/${da}/${vi}`,
-            patternOverride: pattern,
-            patternKind: "manualHif",
-          });
-        }
-      }
-    }
-
-    return entries;
   }
 
   function combinations(array, count) {
@@ -1983,10 +2004,6 @@ function App() {
     const calculationHifVariant =
       calculationSettings?.hifVariant ?? "standard";
 
-    const calculationHifManualDeckPattern =
-      calculationSettings?.hifManualDeckPattern ??
-      createDefaultManualDeckPattern();
-
     const isHifManualVariant =
       calculationEffectiveMode === "hif" &&
       calculationHifVariant === "manual";
@@ -2036,6 +2053,7 @@ function App() {
         rentalResults: rentalCardResults,
         forcedCardIds: calculationFixedCardIds,
         fixedRentalCardId: calculationFixedRentalCardId,
+
       });
     }
 
@@ -2095,41 +2113,32 @@ function App() {
         patternKind: "normal",
       }));
 
-      const shouldUseOnlyHifDa4Patterns =
-        calculationEffectiveMode === "hif" &&
-        calculationHifVariant === FUWAMOKO_HIF_VARIANT_KEY &&
-        (calculationType === "voda" || calculationType === "davi");
+      const calculationHifFourStackType = normalizeHifFourStackType(
+        calculationSettings?.hifFourStackType ?? FOUR_STACK_NONE,
+        calculationType,
+        calculationHifVariant
+      );
 
-      const shouldAddHifDa4Patterns =
-        calculationEffectiveMode === "hif" &&
-        (calculationType === "voda" || calculationType === "davi");
-
-      const hifDa4PatternEntries = shouldAddHifDa4Patterns
-        ? SPECIAL_HIF_DA4_PATTERNS[calculationType].map((patternConfig) => ({
-          patternName: patternConfig.patternName,
-          patternOverride: patternConfig.pattern,
-          patternKind: "hifDa4",
-        }))
-        : [];
-
-      const manualHifPatternEntries =
-        isHifManualVariant &&
-          !calculationHifManualDeckPattern.useNormalPatterns
-          ? createManualDeckPatternEntries(calculationHifManualDeckPattern)
+      const hifFourStackPatternEntries =
+        calculationEffectiveMode === "hif"
+          ? createHifFourStackPatternEntries({
+            fourStackType: calculationHifFourStackType,
+            trend: calculationType,
+            hifVariant: calculationHifVariant,
+          })
           : [];
 
       let patternEntries = [];
 
-      if (isHifManualVariant) {
-        patternEntries = calculationHifManualDeckPattern.useNormalPatterns
-          ? normalPatternEntries
-          : manualHifPatternEntries;
-      } else if (shouldUseOnlyHifDa4Patterns) {
-        patternEntries = hifDa4PatternEntries;
+      if (calculationHifVariant === FUWAMOKO_HIF_VARIANT_KEY) {
+        patternEntries =
+          calculationHifFourStackType === "Da"
+            ? hifFourStackPatternEntries
+            : normalPatternEntries;
       } else {
         patternEntries = [
           ...normalPatternEntries,
-          ...hifDa4PatternEntries,
+          ...hifFourStackPatternEntries,
         ];
       }
 
@@ -2152,8 +2161,8 @@ function App() {
           scenarioLabel: scenario.scenarioLabel,
           patternName,
           patternKey:
-            patternKind === "hifDa4"
-              ? `hif-da4-${calculationType}-${patternName}`
+            patternKind === "fourStack"
+              ? `four-stack-${calculationHifFourStackType}-${calculationType}-${patternName}`
               : patternKind === "manualHif"
                 ? `manual-hif-${patternName}`
                 : `normal-${patternName}`,
@@ -2230,7 +2239,7 @@ function App() {
               alt="サポカ計算機"
             />
             <h1 className="mainTitle">サポカ計算機</h1>
-            <span className="version">v1.1.5 - 手動調整のプリセット引き継ぎ・最低枚数指定に対応</span>
+            <span className="version">v1.1.7 - 新サポカ対応・4枚積み指定を追加</span>
             <p className="appDescription">
               所持サポカからおすすめ上位6枚を自動計算します。
             </p>
@@ -2248,24 +2257,33 @@ function App() {
                 </button>
 
                 <h2>更新履歴</h2>
-                <p><strong>v1.1.6</strong></p>
-                <span className="versionDate"> - 2026/06/05</span>
+                <p><strong>v1.1.7</strong></p>
+                <span className="versionDate"> - 2026/07/08</span>
+
                 <p className="changelogNote">サイトに以下の機能を追加しました：</p>
                 <ul>
-                  <li>「私を楽しませろ」を追加しました</li>
+                  <li>「どーなっちゃうの～？」「おでん、通りま～すッ！」「次の曲は～ッあの曲だ！！」を追加しました</li>
+                  <li>4枚採用するサポカ属性を指定できる「4枚積み指定」を追加しました</li>
                 </ul>
+
+                <p className="changelogNote">以下の表示を改善しました：</p>
+                <ul>
+                  <li>手動調整画面の表示を整理しました</li>
+                </ul>
+
+
                 <p className="subText">
                   ※HIF編の計算条件は仮設定であり、順次調整する予定です。
                   <br />
                   ※HIFの強化月間は未対応のため、ONにしても通常HIFと同じ条件で計算されます。
                 </p>
 
-                <p className="subText">
-                  Vo特化は"9:0:1"、Vi特化は"1:0:9"に統一しました。
-                  <br />
-                  パラメータ上限の観点から、手動調整からDaサポカを4枚以上指定した場合はVo特化またはVi特化で指定することをおすすめします。
-                </p>
-
+                <p><strong>v1.1.6</strong></p>
+                <span className="versionDate"> - 2026/06/05</span>
+                <p className="changelogNote">サイトに以下の機能を追加しました：</p>
+                <ul>
+                  <li>「私を楽しませろ」を追加しました</li>
+                </ul>
                 <p><strong>v1.1.5</strong></p>
                 <span className="versionDate"> - 2026/06/03</span>
                 <p className="changelogNote">以下の機能・動作を改善しました：</p>
@@ -2280,12 +2298,6 @@ function App() {
                   <br />
                   パラメータ上限の観点から、手動調整からDaサポカを4枚以上指定した場合はVo特化またはVi特化で指定することをおすすめします。
                 </p>
-                <p className="subText">
-                  ※HIF編の計算条件は仮設定であり、順次調整する予定です。
-                  <br />
-                  ※HIFの強化月間は未対応のため、ONにしても通常HIFと同じ条件で計算されます。
-                </p>
-
                 <p><strong>v1.1.4</strong></p>
                 <span className="versionDate"> - 2026/05/29</span>
                 <p className="changelogNote">サイトに以下の機能を追加しました：</p>
@@ -2654,119 +2666,16 @@ function App() {
             <details className="manualHifContextBox" open>
               <summary>HIFの計算条件を手動調整</summary>
 
-              <p className="subText">
-                直前に選択していたプレイ方針の値をもとに、各発動回数や獲得数を手動で上書きします。
-                試験パラメータ分は下の「試験パラメータ比率」で別途加算されます。
-              </p>
-              {mode === "hif" && hifVariant === "manual" && (
-                <div className="manualHifDeckPatternBox">
-                  <div className="sectionTitle">サポカ編成パターンを手動で設定</div>
+              <div className="manualHifDescription">
+                <p>
+                  直前に選択していたプレイ方針の値をもとに、各発動回数や獲得数を手動で上書きします。<br />
+                  試験パラメータ分は下の「試験パラメータ比率」で別途加算されます。
+                </p>
 
-                  <label className="enhancedModeToggle">
-                    <input
-                      className="enhancedModeCheckbox"
-                      type="checkbox"
-                      checked={!hifManualDeckPattern.useNormalPatterns}
-                      onChange={(e) =>
-                        setHifManualDeckPattern((prev) => ({
-                          ...prev,
-                          useNormalPatterns: !e.target.checked,
-                        }))
-                      }
-                    />
-                    <span className="enhancedModeLabel">
-                      サポカの最低枚数を指定する
-                    </span>
-                  </label>
-
-                  {hifManualDeckPattern.useNormalPatterns ? (
-                    <p className="subText">
-                      3/3/0・3/2/1・2/3/1・2/2/2 の通常パターンで計算します。
-                    </p>
-                  ) : (
-                    <>
-                      <p className="subText">
-                        Vo / Da / Vi のサポカ最低枚数を指定します。
-                        条件を満たす編成パターンを自動で計算します。
-                      </p>
-
-                      <div className="manualDeckPatternGrid">
-                        <label>
-                          Voサポカ
-                          <select
-                            className="selectBox"
-                            value={hifManualDeckPattern.vo}
-                            onChange={(e) =>
-                              setHifManualDeckPattern((prev) => ({
-                                ...prev,
-                                vo: Number(e.target.value),
-                              }))
-                            }
-                          >
-                            {[0, 1, 2, 3, 4].map((count) => (
-                              <option key={count} value={count}>
-                                {count}枚以上
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-
-                        <label>
-                          Daサポカ
-                          <select
-                            className="selectBox"
-                            value={hifManualDeckPattern.da}
-                            onChange={(e) =>
-                              setHifManualDeckPattern((prev) => ({
-                                ...prev,
-                                da: Number(e.target.value),
-                              }))
-                            }
-                          >
-                            {[0, 1, 2, 3, 4].map((count) => (
-                              <option key={count} value={count}>
-                                {count}枚以上
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-
-                        <label>
-                          Viサポカ
-                          <select
-                            className="selectBox"
-                            value={hifManualDeckPattern.vi}
-                            onChange={(e) =>
-                              setHifManualDeckPattern((prev) => ({
-                                ...prev,
-                                vi: Number(e.target.value),
-                              }))
-                            }
-                          >
-                            {[0, 1, 2, 3, 4].map((count) => (
-                              <option key={count} value={count}>
-                                {count}枚以上
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-                      </div>
-
-                      <p
-                        className={
-                          isValidManualDeckPattern(hifManualDeckPattern)
-                            ? "subText"
-                            : "warningText"
-                        }
-                      >
-                        最低枚数の合計：{getManualDeckMinCountTotal(hifManualDeckPattern)}枚
-                        {!isValidManualDeckPattern(hifManualDeckPattern) &&
-                          "（6枚を超えているため、この条件では計算できません）"}
-                      </p>
-                    </>
-                  )}
-                </div>
-              )}
+                <p className="manualHifHintText">
+                  サブレッスンを一属性に寄せた場合の獲得ステータスは「800/340/0」です。
+                </p>
+              </div>
 
               <div className="manualHifContextGrid">
                 {Object.entries(
@@ -2822,13 +2731,6 @@ function App() {
                 onClick={() => {
                   setHifManualContextOverrides(
                     createHifManualContextOverridesFromVariant(
-                      hifManualBaseVariant,
-                      type
-                    )
-                  );
-
-                  setHifManualDeckPattern(
-                    createHifManualDeckPatternFromVariant(
                       hifManualBaseVariant,
                       type
                     )
@@ -2949,6 +2851,27 @@ function App() {
               ))}
             </select>
           </label>
+
+          {mode === "hif" && (
+            <label>
+              4枚積み指定
+              <select
+                className="selectBox"
+                value={normalizeHifFourStackType(hifFourStackType, type, hifVariant)}
+                onChange={(e) =>
+                  setHifFourStackType(
+                    normalizeHifFourStackType(e.target.value, type, hifVariant)
+                  )
+                }
+              >
+                {getHifFourStackTypeOptions(type, hifVariant).map((optionValue) => (
+                  <option key={optionValue || "none"} value={optionValue}>
+                    {FOUR_STACK_TYPE_LABELS[optionValue]}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
 
           <details className="conditionDetails">
             <summary>計算条件を見る</summary>
@@ -3416,6 +3339,7 @@ function App() {
                 ),
                 isEnhancedMode,
                 hifVariant,
+                hifFourStackType,
                 hifExamRatioPreset,
                 hifManualExamRatio,
                 isSpecialItemEffectEnabled,
@@ -3424,7 +3348,6 @@ function App() {
                 fixedCardIds,
                 fixedRentalCardId,
                 hifManualContextOverrides,
-                hifManualDeckPattern,
               });
               setShowResult(true);
               setShowRecalculateNotice(false);

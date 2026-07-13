@@ -1508,3 +1508,24 @@ body.darkModeBody #root {
   font-size: 0.85rem;
   padding: 3px 5px;
 }
+
+.manualHifDescription {
+  margin: 4px 0 18px;
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.manualHifDescription p {
+  margin: 0;
+}
+
+.manualHifHintText {
+  margin-top: 6px !important;
+  color: #777777;
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.darkModeBody .manualHifHintText {
+  color: #aaaaaa;
+}
