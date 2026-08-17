@@ -2897,7 +2897,7 @@ export const cards = [
     "anomaly": 1,
     "rental_candidate": 0,
     "abilities": [
-      "param_bonus_da_id",
+      "param_bonus_vi_id",
       "on_special_training_id",
       "on_sp_vi_id",
       "on_supply_2times_id",
@@ -2923,7 +2923,7 @@ export const cards = [
     "anomaly": 1,
     "rental_candidate": 0,
     "abilities": [
-      "param_bonus_da_id",
+      "param_bonus_vi_id",
       "get_ssr_id",
       "on_sp_vi_id",
       "on_outing_2times_id",
@@ -2949,7 +2949,7 @@ export const cards = [
     "anomaly": 0,
     "rental_candidate": 1,
     "abilities": [
-      "param_bonus_da_id",
+      "param_bonus_vo_id",
       "on_delete_4times_id",
       "on_sp_vo_id",
       "get_impression_8cards_id",
